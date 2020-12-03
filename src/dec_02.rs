@@ -37,7 +37,7 @@ impl PasswordEntry {
     }
 
     fn is_valid_part_two(&self) -> bool {
-        let chars: Vec<_> = self.password.chars().collect();
+        let chars: Vec<char> = self.password.chars().collect();
         let first_match = chars[(self.number_1 - 1) as usize] == self.character;
         let second_match = chars[(self.number_2 - 1) as usize] == self.character;
         return first_match ^ second_match;
