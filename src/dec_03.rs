@@ -1,7 +1,7 @@
 use crate::common;
 
 struct Landscape {
-    landscape: Vec<Vec<i32>>
+    grid: Vec<Vec<i32>>
 }
 
 struct Slope {
@@ -16,7 +16,7 @@ impl Landscape {
     }
 
     fn parse(lines: &Vec<String>) -> Landscape {
-        let mut landscape: Vec<Vec<i32>> = Vec::new();
+        let mut grid: Vec<Vec<i32>> = Vec::new();
         for line in lines {
             let line_as_numbers: Vec<i32> = line.chars().into_iter()
                 .map(|c| match c {
@@ -24,49 +24,48 @@ impl Landscape {
                     _ => 0
                 })
                 .collect();
-            landscape.push(line_as_numbers);
+            grid.push(line_as_numbers);
         }
         return Landscape {
-            landscape,
+            grid,
         };
     }
 
-    fn evaluate(&self, slope: &Slope) -> i64 {
+    fn evaluate(&self, slope: &Slope) -> i32 {
+        let height = self.grid.len();
+        let width = self.grid[0].len();
+
         let mut x = 0;
         let mut y = 0;
         let mut count = 0;
-        while y < self.landscape.len() {
-            count += self.landscape[y][x];
-            x = (x + slope.x) % self.landscape[0].len();
+        while y < height {
+            count += self.grid[y][x];
+            x = (x + slope.x) % width;
             y = y + slope.y;
         }
-        return count as i64;
-    }
-
-    fn evaluate_slopes_and_multiply_results(&self, slopes: &Vec<Slope>) -> i64 {
-        return slopes.iter()
-            .map(|s| self.landscape.evaluate(s))
-            .product();
+        return count;
     }
 }
 
 pub fn part_one() {
     println!("--- Part One ---");
-    let landscape = Landscape::from_file("./data/dec_03.txt");
-    let count = landscape.evaluate(&Slope { x: 3, y: 1 });
-    println!("Result: {}", count)
-}
 
+    let landscape = Landscape::from_file("./data/dec_03.txt");
+    let result = landscape.evaluate(&Slope { x: 3, y: 1 });
+    println!("Result: {}", result)
+}
 
 pub fn part_two() {
     println!("--- Part Two ---");
+
     let landscape = Landscape::from_file("./data/dec_03.txt");
-    let result = landscape.evaluate_slopes_and_multiply_results([
+    let results = vec![
         Slope { x: 1, y: 1 },
         Slope { x: 3, y: 1 },
         Slope { x: 5, y: 1 },
         Slope { x: 7, y: 1 },
-        Slope { x: 1, y: 2 }]);
-
-    println!("Result: {}", result);
+        Slope { x: 1, y: 2 }].iter()
+        .map(|s| landscape.evaluate(s))
+        .collect();
+    println!("Result: {}", common::format_to_product(&results));
 }

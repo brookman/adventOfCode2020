@@ -29,6 +29,20 @@ pub fn read_strings(filename: &str) -> Vec<String> {
     return strings;
 }
 
+pub fn format_to_sum(numbers: &Vec<i32>) -> String {
+    let strings: Vec<String> = numbers.iter().map(|n| n.to_string()).collect();
+    let joined = strings.join(" + ");
+    let sum: i32 = numbers.iter().sum();
+    return format!("{} = {}", joined, sum);
+}
+
+pub fn format_to_product(numbers: &Vec<i32>) -> String {
+    let strings: Vec<String> = numbers.iter().map(|n| n.to_string()).collect();
+    let joined = strings.join(" * ");
+    let product: i64 = numbers.iter().map(|n| (*n as i64)).product();
+    return format!("{} = {}", joined, product);
+}
+
 // The output is wrapped in a Result to allow matching on errors
 // Returns an Iterator to the Reader of the lines of the file.
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>> where P: AsRef<Path>, {
