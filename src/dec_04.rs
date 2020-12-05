@@ -67,11 +67,11 @@ impl Passport {
 
     fn field_valid(&self, key: &String, value: &String) -> bool {
         lazy_static! {
+            static ref HGT_CM: Regex = Regex::new(r"^(\d{3})cm$").unwrap();
+            static ref HGT_IN: Regex = Regex::new(r"^(\d{2})in$").unwrap();
             static ref PID: Regex = Regex::new(r"^\d{9}$").unwrap();
             static ref HCL: Regex = Regex::new(r"^#[0-9a-f]{6}$").unwrap();
             static ref ECL: Regex = Regex::new(r"^(amb|blu|brn|gry|grn|hzl|oth)$").unwrap();
-            static ref HGT_CM: Regex = Regex::new(r"^(\d{3})cm$").unwrap();
-            static ref HGT_IN: Regex = Regex::new(r"^(\d{2})in$").unwrap();
         }
 
         return match key.as_str() {
