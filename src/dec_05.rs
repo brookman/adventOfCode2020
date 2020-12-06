@@ -1,30 +1,28 @@
 use crate::common;
 
 struct Seat {
-    row: i32,
-    column: i32,
+    // row: i32,
+    // column: i32,
+    id: i32,
 }
 
 impl Seat {
     fn parse(string: &String) -> Seat {
-        let digits: Vec<i32> = string.chars().into_iter()
+        let binary_string: String = string.chars()
             .map(|c| match c {
-                'F' => 0,
-                'B' => 1,
-                'L' => 0,
-                'R' => 1,
-                _ => 0
+                'F' => '0',
+                'B' => '1',
+                'L' => '0',
+                'R' => '1',
+                _ => '0'
             })
             .collect();
-
+        let value = i32::from_str_radix(&binary_string, 2).unwrap();
         return Seat {
-            row: digits[0] * 64 + digits[1] * 32 + digits[2] * 16 + digits[3] * 8 + digits[4] * 4 + digits[5] * 2 + digits[6],
-            column: digits[7] * 4 + digits[8] * 2 + digits[9],
+            // row: value >> 3,
+            // column: value & 7,
+            id: value,
         };
-    }
-
-    fn get_id(&self) -> i32 {
-        return self.row * 8 + self.column;
     }
 }
 
@@ -33,7 +31,7 @@ pub fn part_one() {
 
     let result: i32 = common::read_strings("./data/dec_05.txt").iter()
         .map(|s| Seat::parse(s))
-        .map(|p| p.get_id())
+        .map(|p| p.id)
         .max()
         .unwrap_or(0);
     println!("Result: {}", result);
@@ -41,4 +39,23 @@ pub fn part_one() {
 
 pub fn part_two() {
     println!("--- Part Two ---");
+
+    let mut ids: Vec<i32> = common::read_strings("./data/dec_05.txt").iter()
+        .map(|s| Seat::parse(s))
+        .map(|s| s.id)
+        .collect();
+
+    ids.sort();
+
+    let result = find_missing_value_in_sequence(&ids);
+    println!("Result: {}", result);
+}
+
+fn find_missing_value_in_sequence(ids: &Vec<i32>) -> i32 {
+    for (i, id) in ids.iter().enumerate() {
+        if i + 1 < ids.len() && ids[i + 1] != id + 1 {
+            return id + 1;
+        }
+    }
+    return -1;
 }
