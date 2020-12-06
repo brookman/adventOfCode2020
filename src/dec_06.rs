@@ -1,39 +1,43 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
+
+use itertools::Itertools;
 
 use crate::common;
 
 pub fn part_one() {
     println!("--- Part One ---");
 
-    let sum: i32 = common::read_chunks("./data/dec_06.txt").iter()
-        .map(|chunk| {
-            let mut set: HashSet<char> = HashSet::new();
-            for line in chunk {
-                for c in line.chars() {
-                    set.insert(c);
-                }
-            }
-            return set.len() as i32;
-        }).sum();
-
+    let sum: usize = common::read_chunks("./data/dec_06.txt").iter()
+        .map(|c| c.iter().flat_map(|l| l.chars()).unique().count())
+        .sum();
     println!("Result: {}", sum);
 }
 
 pub fn part_two() {
     println!("--- Part Two ---");
 
-    let chunks = common::read_chunks("./data/dec_06.txt");
-    let mut sum = 0;
-    for chunk in chunks {
-        let mut map: HashMap<char, i32> = HashMap::new();
-        let chunk_len = chunk.len() as i32;
-        for line in chunk {
-            for c in line.chars() {
-                map.insert(c, map.get(&c).unwrap_or(&0) + 1);
-            }
-        }
-        sum += map.iter().filter(|(&_, &value)| value == chunk_len).count();
-    }
-
+    let sum: usize = common::read_chunks("./data/dec_06.txt").iter()
+        .map(|chunk| (chunk_to_count_map(chunk), chunk.len() as i32))
+        .map(|(char_counts, len)| {
+            char_counts.iter()
+                .filter(|(_, &value)| value == len)
+                .count()
+        }).sum();
     println!("Result: {}", sum);
+}
+
+fn chunk_to_count_map(chunk: &Vec<String>) -> HashMap<char, i32> {
+    return to_count_map(&chars_from_chunk(chunk));
+}
+
+fn to_count_map(chars: &Vec<char>) -> HashMap<char, i32> {
+    let mut map: HashMap<char, i32> = HashMap::new();
+    for c in chars {
+        map.insert(*c, map.get(&c).unwrap_or(&0) + 1);
+    }
+    return map;
+}
+
+fn chars_from_chunk(chunk: &Vec<String>) -> Vec<char> {
+    return chunk.iter().flat_map(|l| l.chars()).collect::<Vec<char>>();
 }
