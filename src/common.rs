@@ -16,6 +16,20 @@ pub fn read_numbers(filename: &str) -> Vec<i32> {
     return numbers;
 }
 
+pub fn read_larger_numbers(filename: &str) -> Vec<i64> {
+    let mut numbers = Vec::new();
+    if let Ok(lines) = read_lines(filename) {
+        // Consumes the iterator, returns an (Optional) String
+        for line in lines {
+            if let Ok(l) = line {
+                let number = l.parse::<i64>().unwrap();
+                numbers.push(number);
+            }
+        }
+    }
+    return numbers;
+}
+
 pub fn read_strings(filename: &str) -> Vec<String> {
     let mut strings = Vec::new();
     if let Ok(lines) = read_lines(filename) {
