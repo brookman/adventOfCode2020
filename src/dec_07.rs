@@ -145,7 +145,6 @@ impl Bags {
 
     fn count_number_of_cumulative_children_for_color(&self, color: &String) -> i32 {
         let start_index = self.map.get(color).unwrap();
-        println!("start_index {}", start_index);
         return self.count_number_of_cumulative_children_for_index(*start_index) - 1;
     }
 

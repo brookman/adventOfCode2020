@@ -5,6 +5,9 @@ mod dec_04;
 mod dec_05;
 mod dec_06;
 mod dec_07;
+mod dec_08;
+mod dec_09;
+mod dec_10;
 mod common;
 
 fn main() {
@@ -35,4 +38,16 @@ fn main() {
     println!("\nDecember 7th, 2020");
     dec_07::part_one();
     dec_07::part_two();
+
+    println!("\nDecember 8th, 2020");
+    dec_08::part_one();
+    dec_08::part_two();
+
+    println!("\nDecember 9th, 2020");
+    dec_09::part_one();
+    dec_09::part_two();
+
+    println!("\nDecember 10th, 2020");
+    dec_10::part_one();
+    dec_10::part_two();
 }
