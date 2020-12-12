@@ -31,10 +31,14 @@ impl Mul<i32> for Vector2 {
     }
 }
 
-fn vec_for_rot(degrees: i32) -> Vector2 {
-    let rad = degrees as f64 * PI as f64 / 180.0;
+fn rot_to_vec(degrees: f64) -> Vector2 {
+    let rad = degrees * PI as f64 / 180.0;
     return Vector2 { x: rad.cos().round() as i32, y: rad.sin().round() as i32 };
 }
+
+// fn vec_to_rot(vec: Vector2) -> f64 {
+//     return vec.y.atan2(vec.x) / PI as f64 * 180.0;
+// }
 
 pub fn part_one() {
     println!("--- Part One ---");
@@ -54,19 +58,50 @@ pub fn part_one() {
             'W' => { pos = pos + Vector2 { x: -value, y: 0 } }
             'L' => { rot -= value }
             'R' => { rot += value }
-            'F' => { pos = pos + (vec_for_rot(rot) * value) }
+            'F' => { pos = pos + (rot_to_vec(rot as f64) * value) }
             _ => {}
         }
-
-        println!("pos: {:?}, rot: {}", pos, rot);
     }
 
     println!("Result: {:?}", pos.x.abs() + pos.y.abs());
 }
 
 pub fn part_two() {
-    println!("--- Part One ---");
+    println!("--- Part Two ---");
 
+    let mut pos = Vector2 { x: 0, y: 0 };
+    let mut way = Vector2 { x: 10, y: -1 };
+    let mut lines = common::read_strings("./data/dec_12.txt");
 
-    println!("Result: {:?}", 1);
+    for line in lines {
+        let action = &line[0..1].chars().nth(0).unwrap();
+        let value = line[1..].parse::<i32>().unwrap();
+
+        match action {
+            'N' => { way = way + Vector2 { x: 0, y: -value } }
+            'E' => { way = way + Vector2 { x: value, y: 0 } }
+            'S' => { way = way + Vector2 { x: 0, y: value } }
+            'W' => { way = way + Vector2 { x: -value, y: 0 } }
+            'L' => {
+                match value {
+                    90 => { way = Vector2 { x: way.y, y: -way.x } }
+                    180 => { way = Vector2 { x: -way.x, y: -way.y } }
+                    270 => { way = Vector2 { x: -way.y, y: way.x } }
+                    _ => {}
+                }
+            }
+            'R' => {
+                match value {
+                    90 => { way = Vector2 { x: -way.y, y: way.x } }
+                    180 => { way = Vector2 { x: -way.x, y: -way.y } }
+                    270 => { way = Vector2 { x: way.y, y: -way.x } }
+                    _ => {}
+                }
+            }
+            'F' => { pos = pos + (way.clone() * value) }
+            _ => {}
+        }
+    }
+
+    println!("Result: {:?}", pos.x.abs() + pos.y.abs());
 }
