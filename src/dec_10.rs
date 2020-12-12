@@ -59,7 +59,7 @@ pub fn part_one() {
 pub fn part_two() {
     println!("--- Part Two ---");
 
-    let mut numbers: Vec<i32> = common::read_numbers("./data/dec_10.txt").into_iter()
+    let numbers: Vec<i32> = common::read_numbers("./data/dec_10.txt").into_iter()
         .sorted()
         .collect();
 

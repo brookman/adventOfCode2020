@@ -41,7 +41,6 @@ fn find_first_invalid_number(numbers: &Vec<i64>) -> i64 {
         if counter >= 24 {
             if !contains_sum(&window, numbers[counter] as i64) {
                 return numbers[counter];
-                break;
             }
         }
 
