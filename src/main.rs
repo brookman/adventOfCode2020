@@ -11,6 +11,7 @@ mod dec_10;
 mod dec_11;
 mod dec_12;
 mod common;
+mod vectors;
 
 fn main() {
     println!("\nDecember 1st, 2020");

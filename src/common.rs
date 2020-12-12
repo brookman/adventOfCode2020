@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::{self, BufRead};
+
 use std::path::Path;
 
 pub fn read_numbers(filename: &str) -> Vec<i32> {

@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter, Result};
-use std::ops::Add;
 
 use crate::common;
+use crate::vectors::Vector2i;
 
 #[derive(Clone, Debug, PartialEq)]
 enum CellState {
@@ -27,29 +27,12 @@ struct Grid {
     cells: Vec<CellState>,
 }
 
-#[derive(Clone, Debug)]
-struct Vector2 {
-    x: i32,
-    y: i32,
-}
-
-impl Add<Vector2> for Vector2 {
-    type Output = Vector2;
-
-    fn add(self, other: Vector2) -> Vector2 {
-        Vector2 {
-            x: self.x + other.x,
-            y: self.y + other.y,
-        }
-    }
-}
-
 impl Display for Grid {
     fn fmt(&self, f: &mut Formatter) -> Result {
         for (i, cell) in self.cells.iter().enumerate() {
-            write!(f, "{}", cell);
+            let _ = write!(f, "{}", cell);
             if (i + 1) % self.width == 0 {
-                write!(f, "\n");
+                let _ = write!(f, "\n");
             }
         }
         return write!(f, "");
@@ -75,28 +58,20 @@ impl Grid {
     pub fn count_occupied(&self, index: usize, max_dist: i32) -> i32 {
         let x = (index % self.width) as i32;
         let y = (index / self.width) as i32;
-        let pos = Vector2 { x, y };
+        let pos = Vector2i { x, y };
 
         return
-            self.get_occupied(pos.clone(), Vector2 { x: -1, y: -1 }, max_dist)
-                + self.get_occupied(pos.clone(), Vector2 { x: 0, y: -1 }, max_dist)
-                + self.get_occupied(pos.clone(), Vector2 { x: 1, y: -1 }, max_dist)
-                + self.get_occupied(pos.clone(), Vector2 { x: -1, y: 0 }, max_dist)
-                + self.get_occupied(pos.clone(), Vector2 { x: 1, y: 0 }, max_dist)
-                + self.get_occupied(pos.clone(), Vector2 { x: -1, y: 1 }, max_dist)
-                + self.get_occupied(pos.clone(), Vector2 { x: 0, y: 1 }, max_dist)
-                + self.get_occupied(pos.clone(), Vector2 { x: 1, y: 1 }, max_dist);
+            self.get_occupied(pos.clone(), Vector2i { x: -1, y: -1 }, max_dist)
+                + self.get_occupied(pos.clone(), Vector2i { x: 0, y: -1 }, max_dist)
+                + self.get_occupied(pos.clone(), Vector2i { x: 1, y: -1 }, max_dist)
+                + self.get_occupied(pos.clone(), Vector2i { x: -1, y: 0 }, max_dist)
+                + self.get_occupied(pos.clone(), Vector2i { x: 1, y: 0 }, max_dist)
+                + self.get_occupied(pos.clone(), Vector2i { x: -1, y: 1 }, max_dist)
+                + self.get_occupied(pos.clone(), Vector2i { x: 0, y: 1 }, max_dist)
+                + self.get_occupied(pos.clone(), Vector2i { x: 1, y: 1 }, max_dist);
     }
 
-    pub fn get_occupied_direction(&self, x: i32, y: i32) -> i32 {
-        if x >= 0 && x < self.width as i32 && y >= 0 && y < self.height as i32
-            && self.cells[y as usize * self.width + x as usize] == CellState::OccupiedSeat {
-            return 1;
-        }
-        return 0;
-    }
-
-    pub fn get_occupied(&self, pos: Vector2, dir: Vector2, max_dist: i32) -> i32 {
+    pub fn get_occupied(&self, pos: Vector2i, dir: Vector2i, max_dist: i32) -> i32 {
         let mut cur = pos.clone();
         for _ in 0..max_dist {
             cur = cur.clone() + dir.clone();
