@@ -20,7 +20,6 @@ impl Display for CellState {
     }
 }
 
-
 #[derive(Clone, Debug)]
 struct Grid {
     height: usize,
@@ -75,7 +74,7 @@ impl Grid {
 
     pub fn count_occupied(&self, index: usize, max_dist: i32) -> i32 {
         let x = (index % self.width) as i32;
-        let y = (index / self.height) as i32;
+        let y = (index / self.width) as i32;
         let pos = Vector2 { x, y };
 
         return
@@ -89,28 +88,6 @@ impl Grid {
                 + self.get_occupied(pos.clone(), Vector2 { x: 1, y: 1 }, max_dist);
     }
 
-    // pub fn get_neighbors(&self, index: usize) -> Vec<CellState> {
-    //     let x = (index % self.width) as i32;
-    //     let y = (index / self.height) as i32;
-    //
-    //     let neighbors: Vec<CellState> = vec!(
-    //         self.get(x - 1, y - 1),
-    //         self.get(x + 0, y - 1),
-    //         self.get(x + 1, y - 1),
-    //         self.get(x - 1, y + 0),
-    //         // self.get(x + 0, y + 0),
-    //         self.get(x + 1, y + 0),
-    //         self.get(x - 1, y + 1),
-    //         self.get(x + 0, y + 1),
-    //         self.get(x + 1, y + 1)
-    //     ).into_iter()
-    //         .filter(|c| *c != None)
-    //         .map(|c| c.unwrap())
-    //         .collect();
-    //
-    //     return neighbors;
-    // }
-
     pub fn get_occupied_direction(&self, x: i32, y: i32) -> i32 {
         if x >= 0 && x < self.width as i32 && y >= 0 && y < self.height as i32
             && self.cells[y as usize * self.width + x as usize] == CellState::OccupiedSeat {
@@ -119,10 +96,10 @@ impl Grid {
         return 0;
     }
 
-    pub fn get_occupied(&self, pos: Vector2, dir:Vector2, max_dist: i32) -> i32 {
+    pub fn get_occupied(&self, pos: Vector2, dir: Vector2, max_dist: i32) -> i32 {
         let mut cur = pos.clone();
         for _ in 0..max_dist {
-             cur = cur.clone() + dir.clone();
+            cur = cur.clone() + dir.clone();
             if cur.x < 0 || cur.x >= self.width as i32 || cur.y < 0 || cur.y >= self.height as i32 {
                 return 0;
             }
@@ -134,13 +111,6 @@ impl Grid {
         }
         return 0;
     }
-
-    // pub fn get(&self, x: i32, y: i32) -> Option<CellState> {
-    //     if x >= 0 && x < self.width as i32 && y >= 0 && y < self.height as i32 {
-    //         return Some(self.cells[y as usize * self.width + x as usize].clone());
-    //     }
-    //     return None;
-    // }
 
     pub fn next(&self, min_occupied: i32, max_dist: i32) -> (Grid, bool) {
         let mut new_cells: Vec<CellState> = Vec::new();
