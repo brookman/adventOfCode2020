@@ -24,12 +24,13 @@ fn parse_numbers() -> Vec<i32> {
 }
 
 fn get_nth_number(starting_numbers: &Vec<i32>, n: i32) -> i32 {
-    let mut map: HashMap<i32, i32> = HashMap::new();
+    let mut map: Vec<i32> = vec![-1; n as usize];
+
     let mut last = *starting_numbers.last().unwrap();
     let mut count = 0;
 
     for n in starting_numbers {
-        map.insert(*n, count);
+        map[*n as usize] = count;
         last = *n;
         count += 1;
     }
@@ -37,11 +38,12 @@ fn get_nth_number(starting_numbers: &Vec<i32>, n: i32) -> i32 {
     let max = n - starting_numbers.len() as i32;
     for _ in 0..max {
         let mut number = 0;
-        if map.contains_key(&last) {
-            number = count - map.get(&last).unwrap() - 1;
+        let val = map[last as usize];
+        if val > -1 {
+            number = count - val - 1;
         }
 
-        map.insert(last, count - 1);
+        map[last as usize] = count - 1;
         last = number;
         count += 1;
     }
