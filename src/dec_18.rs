@@ -12,7 +12,7 @@ pub enum LexItem {
 pub fn part_one() {
     println!("--- Part One ---");
 
-    let result = common::read_strings("./data/dec_18.txt").iter()
+    let result: u64 = common::read_strings("./data/dec_18.txt").iter()
         .map(|line| {
             let items = lex(line).unwrap();
             return evaluate(&mut items.iter());
@@ -24,7 +24,12 @@ pub fn part_one() {
 pub fn part_two() {
     println!("--- Part Two ---");
 
-    let result = 0;
+    let result: u64 = common::read_strings("./data/dec_18.txt").iter()
+        .map(|line| {
+            let items = lex(line).unwrap();
+            return evaluate2(&mut items.iter());
+        }).sum();
+
     println!("Result: {:?}", result);
 }
 
@@ -56,6 +61,62 @@ fn evaluate(items: &mut Iter<LexItem>) -> u64 {
         }
     }
     return value;
+}
+
+fn evaluate2(items: &mut Iter<LexItem>) -> u64 {
+    let mut value_stack: Vec<u64> = vec![];
+    let mut operator_stack: Vec<char> = vec![];
+
+    while let Some(item) = items.next() {
+        match item {
+            LexItem::Parenthesis('(') => {
+                operator_stack.push('(');
+            }
+            LexItem::Parenthesis(')') => {
+                while *operator_stack.last().unwrap() != '(' {
+                    execute_operation(&mut value_stack, &mut operator_stack);
+                }
+                operator_stack.pop();
+            }
+            LexItem::Operation(c) => {
+                let this_op = c;
+                while operator_stack.len() > 0
+                    && precedence(&operator_stack.last().unwrap()) >= precedence(&this_op) {
+                    execute_operation(&mut value_stack, &mut operator_stack);
+                }
+                operator_stack.push(*this_op);
+            }
+            LexItem::Digit(d) => {
+                value_stack.push(*d);
+            }
+            _ => {}
+        }
+    }
+
+    while operator_stack.len() > 0 {
+        execute_operation(&mut value_stack, &mut operator_stack);
+    }
+
+    return value_stack.pop().unwrap();
+}
+
+fn execute_operation(value_stack: &mut Vec<u64>, operator_stack: &mut Vec<char>) {
+    let op: char = operator_stack.pop().unwrap();
+    let value_1 = value_stack.pop().unwrap();
+    let value_2 = value_stack.pop().unwrap();
+    value_stack.push(match op {
+        '+' => value_1 + value_2,
+        '*' => value_1 * value_2,
+        _ => 0
+    });
+}
+
+fn precedence(op: &char) -> i32 {
+    return match op {
+        '+' => 2,
+        '*' => 1,
+        _ => 0,
+    };
 }
 
 fn lex(input: &String) -> Result<Vec<LexItem>, String> {
