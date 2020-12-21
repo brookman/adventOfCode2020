@@ -1,3 +1,6 @@
+#![allow(incomplete_features)]
+#![feature(const_generics)]
+
 mod dec_01;
 mod dec_02;
 mod dec_03;
