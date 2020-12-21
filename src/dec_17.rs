@@ -34,25 +34,27 @@ fn cast_to_u32(a: &Vec<i32>) -> Vec<u32> {
 }
 
 #[derive(Clone, Debug)]
-struct Grid<const D: usize> {
+struct Grid {
     size: usize,
+    dimensions: usize,
     cells: Vec<u8>,
 }
 
-impl<const D: usize> Grid<{ D }> {
-    fn new(size: usize) -> Grid<{ D }> {
+impl Grid {
+    fn new(size: usize, dimensions: usize) -> Grid {
         return Grid {
             size,
-            cells: vec![0; size.pow(D as u32) * BITS_PER_DIMENSION as usize],
+            dimensions,
+            cells: vec![0; size.pow(dimensions as u32) * BITS_PER_DIMENSION as usize],
         };
     }
 
-    fn parse(filename: &str) -> Grid<{ D }> {
+    fn parse(filename: &str, dimensions: usize) -> Grid {
         let lines = common::read_strings(filename);
-        let mut state = Grid::new(lines.len());
+        let mut state = Grid::new(lines.len(), dimensions);
         for (y, line) in lines.iter().enumerate() {
             for (x, c) in line.chars().enumerate() {
-                let mut coords = vec![(lines.len() / 2) as u32; D];
+                let mut coords = vec![(lines.len() / 2) as u32; dimensions];
                 coords[0] = x as u32;
                 coords[1] = y as u32;
                 state.set(&coords, if c == '#' { 1 } else { 0 });
@@ -85,8 +87,8 @@ impl<const D: usize> Grid<{ D }> {
     fn count_neighbors(&self, vec_coords: &Vec<i32>) -> u32 {
         let mut sum = 0u32;
 
-        for permutation in vec![-1, 0, 1].into_iter().combinations_with_replacement(D)
-            .flat_map(|co| co.into_iter().permutations(D).unique()) {
+        for permutation in vec![-1, 0, 1].into_iter().combinations_with_replacement(self.dimensions)
+            .flat_map(|co| co.into_iter().permutations(self.dimensions).unique()) {
             if permutation == vec![0, 0, 0] {
                 continue;
             }
@@ -97,10 +99,10 @@ impl<const D: usize> Grid<{ D }> {
         return sum;
     }
 
-    fn next(&self) -> Grid<{ D }> {
-        let mut new_grid = Grid::new(self.size + 2);
+    fn next(&self) -> Grid {
+        let mut new_grid = Grid::new(self.size + 2, self.dimensions);
         for cell in 0..new_grid.cells.len() {
-            let coords = to_coords(cell, D);
+            let coords = to_coords(cell, self.dimensions);
             let old_coord = add(&cast_to_i32(&coords), &vec![-1; coords.len()]);
             let old_value = self.get(&old_coord);
             let count = self.count_neighbors(&old_coord);
@@ -120,9 +122,9 @@ impl<const D: usize> Grid<{ D }> {
     }
 }
 
-impl<const D: usize> fmt::Display for Grid<{ D }> {
+impl fmt::Display for Grid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "\nsize={}, dimensions={}, cells={}\n", self.size, D, self.cells.len());
+        write!(f, "\nsize={}, dimensions={}, cells={}\n", self.size, self.dimensions, self.cells.len());
         for z in 0..self.size {
             write!(f, "z={}\n", z);
             for y in 0..self.size {
@@ -141,19 +143,19 @@ impl<const D: usize> fmt::Display for Grid<{ D }> {
 }
 
 pub fn part_one() {
-    println!("--- Part One ---");
-    let mut state = Grid::<3>::parse("./data/dec_17.txt");
-    for _ in 0..6 {
-        state = state.next();
-    }
-    println!("Result: {}", state.count_all());
+    // println!("--- Part One ---");
+    // let mut state = Grid::parse("./data/dec_17.txt", 3);
+    // for _ in 0..6 {
+    //     state = state.next();
+    // }
+    // println!("Result: {}", state.count_all());
 }
 
 pub fn part_two() {
-    println!("--- Part One ---");
-    let mut state = Grid::<4>::parse("./data/dec_17.txt");
-    for _ in 0..6 {
-        state = state.next();
-    }
-    println!("Result: {}", state.count_all());
+    // println!("--- Part One ---");
+    // let mut state = Grid::parse("./data/dec_17.txt", 4);
+    // for _ in 0..6 {
+    //     state = state.next();
+    // }
+    // println!("Result: {}", state.count_all());
 }
