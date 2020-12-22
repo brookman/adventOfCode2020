@@ -1,3 +1,4 @@
+use std::cmp;
 use std::collections::HashMap;
 
 use lazy_static::lazy_static;
@@ -22,19 +23,26 @@ impl Data {
     pub fn parse(filename: &str) -> Data {
         let lines = common::read_strings(filename);
         let mut line_iter = lines.iter();
-        let mut rules = vec![Node::new(); 1000];
+        let mut rules_map = HashMap::new();
+        let mut max = 0;
+
         let mut messages = vec![];
         while let Some(line) = line_iter.next() {
             if line.is_empty() {
                 break;
             }
             let (key, node) = Node::parse(&line);
-            rules[key] = node;
+            max = cmp::max(max, key);
+            rules_map.insert(key, node);
         }
         while let Some(line) = line_iter.next() {
             messages.push(line.clone());
         }
 
+        let mut rules = vec![Node::new(); max + 1];
+        for (key, value) in rules_map {
+            rules[key] = value;
+        }
         return Data {
             rules,
             messages,
@@ -83,27 +91,32 @@ pub fn part_one() {
 
     let data = Data::parse("./data/dec_19.txt");
 
-    let mut str = "".to_string();
-    str.push('^');
-    expand_to_string(&data.rules, 0, &mut str);
-    str.push('$');
-
-    println!("rule_regex: {:?}", str);
-    let rule_regex = Regex::new(&str).unwrap();
-
-    let result = data.messages.into_iter()
-        .filter(|m| rule_regex.is_match(&m))
+    let result = data.messages.iter()
+        .filter(|m| is_valid(&data.rules, m))
         .count();
-
     println!("Result: {:?}", result);
-    // println!("messages: {:?}", data.messages);
 }
 
 pub fn part_two() {
-    println!("--- Part Two ---");
-
-    let result = 0;
-    println!("Result: {:?}", result);
+    // println!("--- Part Two ---");
+    //
+    // let mut data = Data::parse("./data/dec_19.txt");
+    //
+    // data.rules[8] = Node {
+    //     character: None,
+    //     alternative_1: vec![42],
+    //     alternative_2: vec![42, 8],
+    // };
+    // data.rules[11] = Node {
+    //     character: None,
+    //     alternative_1: vec![42, 31],
+    //     alternative_2: vec![42, 11, 31],
+    // };
+    //
+    // let result = data.messages.iter()
+    //     .filter(|m| is_valid(&data.rules, m))
+    //     .count();
+    // println!("Result: {:?}", result);
 }
 
 fn expand_to_string(nodes: &Vec<Node>, key: usize, string: &mut String) {
@@ -124,4 +137,61 @@ fn expand_to_string(nodes: &Vec<Node>, key: usize, string: &mut String) {
         }
         string.push(')');
     }
+}
+
+fn is_valid(nodes: &Vec<Node>, string: &String) -> bool {
+    let (used, matches) = check_valid(nodes, 0, string, 0);
+    let valid = matches && used + 1 == string.len();
+    println!("{:?} valid: {}, matches: {}, used: {}", string, valid, matches, used);
+    return matches && used + 1 == string.len();
+}
+
+fn check_valid(nodes: &Vec<Node>, node_key: usize, string: &String, char_index: usize) -> (usize, bool) {
+    if char_index >= string.len() {
+        println!("exit overrun {:?}", (0, false));
+        return (0, false);
+    }
+
+    let node = &nodes[node_key];
+    let char = string.chars().nth(char_index).unwrap();
+    println!("node[{}]={:?}, char[{}]={}", node_key, node, char_index, char);
+    match node.character {
+        Some(node_char) => {
+            println!("exit match {:?}", (0, node_char == char));
+            return (1, node_char == char);
+        }
+        None => {
+            let res1 = check_sequence(nodes, &node.alternative_1, string, char_index);
+            if res1.1 {
+                println!("exit res1 {:?}", res1);
+                return res1;
+            }
+            let res2 = check_sequence(nodes, &node.alternative_2, string, char_index);
+            if res2.1 {
+                println!("exit res2 {:?}", res1);
+                return res2;
+            }
+        }
+    }
+    println!("exit end {:?}", (0, false));
+    return (0, false);
+}
+
+fn check_sequence(nodes: &Vec<Node>, seq: &Vec<usize>, string: &String, char_index: usize) -> (usize, bool) {
+    if seq.len() > 0 {
+        let mut all_match = true;
+        let mut offset = 0;
+        for (i, alt) in seq.iter().enumerate() {
+            let (used, matches) = check_valid(nodes, *alt, string, char_index + i + offset);
+            all_match &= matches;
+            if !matches {
+                break;
+            }
+            offset += used;
+        }
+        if all_match {
+            return (seq.len() - 1 + offset, true);
+        }
+    }
+    return (0, false);
 }

@@ -1,6 +1,28 @@
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Lines, Result};
 use std::path::Path;
+use std::str::FromStr;
+
+use regex::{Captures, Regex};
+
+pub trait Re {
+    fn re<T: FromStr>(&self, re: &str, index: usize) -> T;
+}
+
+impl Re for String {
+    fn re<T: FromStr>(&self, re: &str, index: usize) -> T {
+        let regex = Regex::new(re).unwrap();
+        return match regex.captures(&self) {
+            Some(caps) => {
+                match caps[index].parse::<T>() {
+                    Ok(value) => Some(value),
+                    _ => None
+                }
+            }
+            None => { None }
+        }.unwrap();
+    }
+}
 
 pub fn read_numbers(filename: &str) -> Vec<i32> {
     let mut numbers = Vec::new();
