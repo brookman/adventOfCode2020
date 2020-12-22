@@ -5,99 +5,94 @@ use regex::Regex;
 
 use crate::common;
 
-struct RawData {
-    rules: Vec<String>,
+#[derive(Debug, Clone)]
+struct Data {
+    rules: Vec<Node>,
     messages: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
-pub enum Rule {
-    Basic(u32),
-    Double(u32, u32),
-    Or2(u32, u32),
-    Or4(u32, u32, u32, u32),
-    Letter(char),
+struct Node {
+    character: Option<char>,
+    alternative_1: Vec<usize>,
+    alternative_2: Vec<usize>,
 }
 
-impl RawData {
-    pub fn parse(filename: &str) -> RawData {
+impl Data {
+    pub fn parse(filename: &str) -> Data {
         let lines = common::read_strings(filename);
         let mut line_iter = lines.iter();
-        let mut rules = vec![];
+        let mut rules = vec![Node::new(); 1000];
         let mut messages = vec![];
         while let Some(line) = line_iter.next() {
             if line.is_empty() {
                 break;
             }
-            rules.push(line.clone());
+            let (key, node) = Node::parse(&line);
+            rules[key] = node;
         }
         while let Some(line) = line_iter.next() {
             messages.push(line.clone());
         }
-        return RawData {
+
+        return Data {
             rules,
             messages,
         };
     }
 }
 
+impl Node {
+    pub fn new() -> Node {
+        return Node {
+            character: None,
+            alternative_1: vec![],
+            alternative_2: vec![],
+        };
+    }
+    pub fn parse(line: &String) -> (usize, Node) {
+        lazy_static! {
+            static ref RULE_MAIN: Regex = Regex::new(r"^(\d+)?: (.+)$").unwrap();
+        }
+        if RULE_MAIN.is_match(&line) {
+            let caps = RULE_MAIN.captures(&line).unwrap();
+            let id = caps[1].parse::<usize>().unwrap();
+            let tokens = caps[2].split(" ");
+
+            let mut node = Node::new();
+            let mut list = &mut node.alternative_1;
+
+            for token in tokens {
+                if token.starts_with("\"") {
+                    node.character = Some(token.chars().nth(1).unwrap());
+                } else if token.starts_with("|") {
+                    list = &mut node.alternative_2;
+                } else {
+                    list.push(token.parse::<usize>().unwrap());
+                }
+            }
+            return (id, node);
+        } else {
+            panic!("PANIK");
+        }
+    }
+}
+
 pub fn part_one() {
     println!("--- Part One ---");
 
-    let data = RawData::parse("./data/dec_19.txt");
-    let mut rules: HashMap<u32, Rule> = HashMap::new();
-
-    for rule_str in data.rules {
-        lazy_static! {
-            static ref RULE_MAIN: Regex = Regex::new(r"^(\d+)?: (.+)$").unwrap();
-            static ref RULE_BASIC: Regex = Regex::new(r"^(\d+)?$").unwrap();
-            static ref RULE_DOUBLE: Regex = Regex::new(r"^(\d+)? (\d+)?$").unwrap();
-            static ref RULE_OR_2: Regex = Regex::new(r"^(\d+)? \| (\d+)?$").unwrap();
-            static ref RULE_OR_4: Regex = Regex::new(r"^(\d+)? (\d+)? \| (\d+)? (\d+)?$").unwrap();
-            static ref RULE_LETTER: Regex = Regex::new("^\"(.)\"$").unwrap();
-        }
-        if RULE_MAIN.is_match(&rule_str) {
-            let caps = RULE_MAIN.captures(&rule_str).unwrap();
-            let key = caps[1].parse::<u32>().unwrap();
-            let content = &caps[2];
-            if RULE_BASIC.is_match(&content) {
-                let caps = RULE_BASIC.captures(&content).unwrap();
-                rules.insert(key, Rule::Basic(
-                    caps[1].parse::<u32>().unwrap()));
-            } else if RULE_DOUBLE.is_match(&content) {
-                let caps = RULE_DOUBLE.captures(&content).unwrap();
-                rules.insert(key, Rule::Double(
-                    caps[1].parse::<u32>().unwrap(),
-                    caps[2].parse::<u32>().unwrap()));
-            } else if RULE_OR_2.is_match(&content) {
-                let caps = RULE_OR_2.captures(&content).unwrap();
-                rules.insert(key, Rule::Or2(
-                    caps[1].parse::<u32>().unwrap(),
-                    caps[2].parse::<u32>().unwrap()));
-            } else if RULE_OR_4.is_match(&content) {
-                let caps = RULE_OR_4.captures(&content).unwrap();
-                rules.insert(key, Rule::Or4(
-                    caps[1].parse::<u32>().unwrap(),
-                    caps[2].parse::<u32>().unwrap(),
-                    caps[3].parse::<u32>().unwrap(),
-                    caps[4].parse::<u32>().unwrap()));
-            } else if RULE_LETTER.is_match(&content) {
-                let caps = RULE_LETTER.captures(&content).unwrap();
-                rules.insert(key, Rule::Letter(caps[1].chars().nth(0).unwrap()));
-            }
-        }
-    }
+    let data = Data::parse("./data/dec_19.txt");
 
     let mut str = "".to_string();
     str.push('^');
-    expand_to_string(&rules, 0, &mut str);
+    expand_to_string(&data.rules, 0, &mut str);
     str.push('$');
 
     println!("rule_regex: {:?}", str);
     let rule_regex = Regex::new(&str).unwrap();
 
     let result = data.messages.into_iter()
-        .filter(|m|rule_regex.is_match(&m))
+        .filter(|m| rule_regex.is_match(&m))
         .count();
 
     println!("Result: {:?}", result);
@@ -111,38 +106,22 @@ pub fn part_two() {
     println!("Result: {:?}", result);
 }
 
-fn expand_to_string(rules: &HashMap<u32, Rule>, rule_key: u32, string: &mut String) {
-    let rule = rules.get(&rule_key).unwrap();
-    match rule {
-        Rule::Basic(v1) => {
-            string.push('(');
-            expand_to_string(rules, *v1, string);
-            string.push(')');
+fn expand_to_string(nodes: &Vec<Node>, key: usize, string: &mut String) {
+    let node = &nodes[key];
+
+    if node.character.is_some() {
+        string.push(node.character.unwrap());
+    } else {
+        string.push('(');
+        for alt in &node.alternative_1 {
+            expand_to_string(nodes, *alt, string);
         }
-        Rule::Double(v1, v2) => {
-            string.push('(');
-            expand_to_string(rules, *v1, string);
-            expand_to_string(rules, *v2, string);
-            string.push(')');
-        }
-        Rule::Or2(v1, v2) => {
-            string.push('(');
-            expand_to_string(rules, *v1, string);
+        if node.alternative_2.len() > 0 {
             string.push('|');
-            expand_to_string(rules, *v2, string);
-            string.push(')');
         }
-        Rule::Or4(v1, v2, v3, v4) => {
-            string.push('(');
-            expand_to_string(rules, *v1, string);
-            expand_to_string(rules, *v2, string);
-            string.push('|');
-            expand_to_string(rules, *v3, string);
-            expand_to_string(rules, *v4, string);
-            string.push(')');
+        for alt in &node.alternative_2 {
+            expand_to_string(nodes, *alt, string);
         }
-        Rule::Letter(c) => {
-            string.push(*c);
-        }
+        string.push(')');
     }
 }
