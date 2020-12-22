@@ -17,6 +17,7 @@ mod dec_16;
 mod dec_17;
 mod dec_18;
 mod dec_19;
+mod dec_20;
 mod common;
 mod vectors;
 
@@ -80,20 +81,24 @@ fn main() {
     // println!("\nDecember 15th, 2020");
     // dec_15::part_one();
     // dec_15::part_two();
-
-    println!("\nDecember 16th, 2020");
-    dec_16::part_one();
-    dec_16::part_two();
-
-    println!("\nDecember 17th, 2020");
-    dec_17::part_one();
-    dec_17::part_two();
-
-    println!("\nDecember 18th, 2020");
-    dec_18::part_one();
-    dec_18::part_two();
+    //
+    // println!("\nDecember 16th, 2020");
+    // dec_16::part_one();
+    // dec_16::part_two();
+    //
+    // println!("\nDecember 17th, 2020");
+    // dec_17::part_one();
+    // dec_17::part_two();
+    //
+    // println!("\nDecember 18th, 2020");
+    // dec_18::part_one();
+    // dec_18::part_two();
 
     println!("\nDecember 19th, 2020");
     dec_19::part_one();
     dec_19::part_two();
+
+    println!("\nDecember 20th, 2020");
+    dec_20::part_one();
+    dec_20::part_two();
 }
