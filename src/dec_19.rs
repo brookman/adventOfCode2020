@@ -43,20 +43,20 @@ impl Data {
         for (key, value) in rules_map {
             rules[key] = value;
         }
-        return Data {
+        Data {
             rules,
             messages,
-        };
+        }
     }
 }
 
 impl Node {
     pub fn new() -> Node {
-        return Node {
+        Node {
             character: None,
             alternative_1: vec![],
             alternative_2: vec![],
-        };
+        }
     }
     pub fn parse(line: &String) -> (usize, Node) {
         lazy_static! {

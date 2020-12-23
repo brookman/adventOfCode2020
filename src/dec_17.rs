@@ -39,11 +39,11 @@ struct Grid {
 
 impl Grid {
     fn new(size: usize, dimensions: usize) -> Grid {
-        return Grid {
+        Grid {
             size,
             dimensions,
             cells: vec![0; size.pow(dimensions as u32) * BITS_PER_DIMENSION as usize],
-        };
+        }
     }
 
     fn parse(filename: &str, dimensions: usize) -> Grid {
@@ -108,10 +108,8 @@ impl Grid {
                 if count == 2 || count == 3 {
                     value = 1;
                 }
-            } else {
-                if count == 3 {
-                    value = 1;
-                }
+            } else if count == 3 {
+                value = 1;
             }
             new_grid.set_index(cell, value);
         }
