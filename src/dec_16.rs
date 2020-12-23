@@ -154,10 +154,10 @@ pub fn part_two() {
 
     let data = Data::parse("./data/dec_16.txt");
 
-    let mut map: HashMap<usize, usize> = data.determine_all();
+    let map: HashMap<usize, usize> = data.determine_all();
     let p: Vec<i32> = data.my_ticket.numbers.iter().enumerate()
-        .filter(|(i, n)| (&data.fields[map[&i]]).name.starts_with("departure"))
-        .map(|(i, n)| *n as i32)
+        .filter(|(i, _)| (&data.fields[map[&i]]).name.starts_with("departure"))
+        .map(|(_, n)| *n as i32)
         .collect();
     println!("Result: {}", format_to_product(&p));
 }

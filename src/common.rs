@@ -1,9 +1,9 @@
 use std::fs::File;
-use std::io::{self, BufRead, BufReader, Lines, Result};
+use std::io::{BufRead, BufReader, Lines, Result};
 use std::path::Path;
 use std::str::FromStr;
 
-use regex::{Captures, Regex};
+use regex::{Regex};
 
 pub trait Re {
     fn re<T: FromStr>(&self, re: &str, index: usize) -> T;

@@ -25,7 +25,7 @@ pub fn part_two() {
     let numbers: Vec<(i32, i32)> = lines[1].split(",")
         .map(|b| b.to_string())
         .enumerate()
-        .filter(|(i, b)| b != "x")
+        .filter(|(_, b)| b != "x")
         .map(|(i, b)| (i as i32, b.parse::<i32>().unwrap()))
         .collect();
 

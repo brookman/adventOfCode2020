@@ -1,11 +1,8 @@
-use std::convert::TryInto;
 use std::fmt;
-use std::ops::{BitAnd, BitOr};
 
-use hilbert::Point;
 use hilbert::transform::fast_hilbert::{hilbert_axes, hilbert_index};
 use itertools::Itertools;
-use num::{Num, NumCast, ToPrimitive};
+use num::ToPrimitive;
 use num::bigint::BigUint;
 
 use crate::common;
@@ -124,18 +121,18 @@ impl Grid {
 
 impl fmt::Display for Grid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "\nsize={}, dimensions={}, cells={}\n", self.size, self.dimensions, self.cells.len());
+        let _ = write!(f, "\nsize={}, dimensions={}, cells={}\n", self.size, self.dimensions, self.cells.len());
         for z in 0..self.size {
-            write!(f, "z={}\n", z);
+            let _ = write!(f, "z={}\n", z);
             for y in 0..self.size {
                 for x in 0..self.size {
                     if self.get(&vec![x as i32, y as i32, z as i32]) > 0 {
-                        write!(f, "#");
+                        let _ = write!(f, "#");
                     } else {
-                        write!(f, ".");
+                        let _ = write!(f, ".");
                     }
                 }
-                write!(f, "\n");
+                let _ = write!(f, "\n");
             }
         }
         write!(f, "")

@@ -1,7 +1,4 @@
-use std::iter::FromIterator;
-
-use ndarray::{Array, Ix2, ShapeBuilder};
-use ndarray::prelude::*;
+#![allow(dead_code)]
 
 mod dec_01;
 mod dec_02;
@@ -23,6 +20,11 @@ mod dec_17;
 mod dec_18;
 mod dec_19;
 mod dec_20;
+mod dec_21;
+mod dec_22;
+mod dec_23;
+mod dec_24;
+mod dec_25;
 mod common;
 mod vectors;
 
@@ -124,12 +126,32 @@ fn main() {
     // println!("\nDecember 18th, 2020");
     // dec_18::part_one();
     // dec_18::part_two();
+    //
+    // println!("\nDecember 19th, 2020");
+    // dec_19::part_one();
+    // dec_19::part_two();
+    //
+    // println!("\nDecember 20th, 2020");
+    // dec_20::part_one();
+    // dec_20::part_two();
 
-    println!("\nDecember 19th, 2020");
-    dec_19::part_one();
-    dec_19::part_two();
+    println!("\nDecember 21st, 2020");
+    dec_21::part_one();
+    dec_21::part_two();
 
-    println!("\nDecember 20th, 2020");
-    dec_20::part_one();
-    dec_20::part_two();
+    println!("\nDecember 22nd, 2020");
+    dec_22::part_one();
+    dec_22::part_two();
+
+    println!("\nDecember 23rd, 2020");
+    dec_23::part_one();
+    dec_23::part_two();
+
+    println!("\nDecember 24th, 2020");
+    dec_24::part_one();
+    dec_24::part_two();
+
+    println!("\nDecember 25th, 2020");
+    dec_25::part_one();
+    dec_25::part_two();
 }

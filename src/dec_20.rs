@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use ndarray::{Array, Array2, ArrayView, ArrayView2, Axis, concatenate, Ix1, Ix2, s};
+use ndarray::{Array, Array2, ArrayView, ArrayView2, Axis, concatenate, Ix1, s};
 use num::integer::Roots;
 
 use crate::common;
