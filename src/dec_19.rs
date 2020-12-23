@@ -89,12 +89,12 @@ impl Node {
 pub fn part_one() {
     println!("--- Part One ---");
 
-    let data = Data::parse("./data/dec_19.txt");
-
-    let result = data.messages.iter()
-        .filter(|m| is_valid(&data.rules, m))
-        .count();
-    println!("Result: {:?}", result);
+    // let data = Data::parse("./data/dec_19.txt");
+    //
+    // let result = data.messages.iter()
+    //     .filter(|m| is_valid(&data.rules, m))
+    //     .count();
+    // println!("Result: {:?}", result);
 }
 
 pub fn part_two() {

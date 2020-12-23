@@ -1,3 +1,8 @@
+use std::iter::FromIterator;
+
+use ndarray::{Array, Ix2, ShapeBuilder};
+use ndarray::prelude::*;
+
 mod dec_01;
 mod dec_02;
 mod dec_03;
@@ -22,6 +27,32 @@ mod common;
 mod vectors;
 
 fn main() {
+    // let mut b = Array::from(vec!['a', 'b', 'c', 'd', 'e', 'f','g', 'h', 'i']).into_shape((3, 3)).unwrap();
+    //
+    // println!("original: \n{:?}", b);
+    // println!("rot 90: \n{:?}", b.t().slice(s![..,..;-1]));  // rot 90
+    // println!("rot 180: \n{:?}", b.slice(s![..;-1,..;-1]));  // rot 180
+    // println!("rot 270: \n{:?}", b.t().slice(s![..;-1,..]));  // rot 270
+    // println!("mirror h: \n{:?}", b.slice(s![..;-1,..]));  // mirror h
+    // println!("mirror v: \n{:?}", b.slice(s![..,..;-1]));  // mirror v
+    //
+    // let mv = b.slice(s![..,..;-1]).into_owned();
+    //
+    // println!("mirror v2: \n{:?}", mv);  // mirror v
+    //
+    // return;
+    // let grid = vectors::Grid2d::<char> {
+    //     width: 3,
+    //     height: 2,
+    //     data: vec!['a', 'b', 'c', 'd', 'e', 'f'],
+    // };
+    // let col = grid.row(1);
+    // for c in col {
+    //     println!("{:?}", c);
+    // }
+    // return;
+
+
     // println!("\nDecember 1st, 2020");
     // dec_01::part_one();
     // dec_01::part_two();
