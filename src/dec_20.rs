@@ -1,14 +1,14 @@
 use itertools::Itertools;
-use ndarray::{Array, Array2, ArrayView, Ix1, s};
+use ndarray::{Array, Array2, ArrayView, ArrayView2, Axis, concatenate, Ix1, Ix2, s};
 use num::integer::Roots;
 
 use crate::common;
 use crate::common::Re;
 
 #[derive(Debug, Clone)]
-struct TileVersion {
+struct Tile {
     id: u32,
-    data: Array2<char>,
+    data: Array2<bool>,
 }
 
 #[derive(Debug, Clone)]
@@ -17,50 +17,67 @@ struct Grid {
     tiles: Vec<Option<usize>>,
 }
 
-impl TileVersion {
-    pub fn parse(filename: &str) -> (usize, Vec<TileVersion>) {
+impl Tile {
+    pub fn parse(filename: &str) -> (usize, usize, Vec<Tile>) {
         let mut result = Vec::new();
-        let mut chunk_count = 0;
+        let mut tile_count = 0;
+        let mut sile_size = 0;
         for chunk in &common::read_strings(filename).iter().chunks(12) {
             let block: Vec<String> = chunk.map(|line| line.trim().to_string()).filter(|line| !line.is_empty()).collect();
             let id = block[0].re::<u32>(r"^Tile (\d+):$", 1);
-            let shape = (block.len() - 1, block[1].len());
-            let chars: Vec<char> = block[1..].join("").chars().collect();
+            sile_size = block[1].len();
+            let bits: Vec<bool> = block[1..].join("").chars().map(|c| c == '#').collect();
 
-            let data: Array2<char> = Array::from_shape_vec(shape, chars).unwrap();
-            let mirror = data.clone().slice_move(s![..,..;-1]);
-            result.push(TileVersion { id, data: data.clone() });
-            result.push(TileVersion { id, data: data.clone().t().to_owned().slice_move(s![..,..;-1]) }); // rot 90
-            result.push(TileVersion { id, data: data.clone().slice_move(s![..;-1,..;-1]) }); // rot 180
-            result.push(TileVersion { id, data: data.clone().t().to_owned().slice_move(s![..;-1,..]) }); // rot 270
-            result.push(TileVersion { id, data: mirror.clone() });
-            result.push(TileVersion { id, data: mirror.clone().t().to_owned().slice_move(s![..,..;-1]) });// rot 90
-            result.push(TileVersion { id, data: mirror.clone().slice_move(s![..;-1,..;-1]) });// rot 180
-            result.push(TileVersion { id, data: mirror.clone().t().to_owned().slice_move(s![..;-1,..]) });// rot 270
-            chunk_count += 1;
+            let data: Array2<bool> = Array::from_shape_vec((sile_size, sile_size), bits).unwrap();
+            let main = Tile { id, data: data.clone() };
+            for variant in main.get_variants() {
+                result.push(variant);
+            }
+            tile_count += 1;
         }
-        (chunk_count, result)
+        (tile_count, sile_size, result)
     }
 
-    pub fn top(&self) -> ArrayView<char, Ix1> {
+    pub fn get_variants(&self) -> Vec<Tile> {
+        let mirror = self.data.clone().slice_move(s![..,..;-1]);
+        return vec![
+            Tile { id: self.id, data: self.data.clone() },
+            Tile { id: self.id, data: self.data.clone().t().to_owned().slice_move(s![..,..;-1]) }, // rot 90
+            Tile { id: self.id, data: self.data.clone().slice_move(s![..;-1,..;-1]) }, // rot 180
+            Tile { id: self.id, data: self.data.clone().t().to_owned().slice_move(s![..;-1,..]) }, // rot 270
+            Tile { id: self.id, data: mirror.clone() },
+            Tile { id: self.id, data: mirror.t().to_owned().slice_move(s![..,..;-1]) }, // rot 90
+            Tile { id: self.id, data: mirror.clone().slice_move(s![..;-1,..;-1]) }, // rot 180
+            Tile { id: self.id, data: mirror.t().to_owned().slice_move(s![..;-1,..]) } // rot 270
+        ];
+    }
+
+    pub fn top(&self) -> ArrayView<bool, Ix1> {
         self.data.slice(s![0,..])
     }
 
-    pub fn bottom(&self) -> ArrayView<char, Ix1> {
+    pub fn bottom(&self) -> ArrayView<bool, Ix1> {
         self.data.slice(s![-1,..])
     }
 
-    pub fn left(&self) -> ArrayView<char, Ix1> {
+    pub fn left(&self) -> ArrayView<bool, Ix1> {
         self.data.slice(s![..,0])
     }
 
-    pub fn right(&self) -> ArrayView<char, Ix1> {
+    pub fn right(&self) -> ArrayView<bool, Ix1> {
         self.data.slice(s![..,-1])
+    }
+
+    pub fn crop(&self) -> Tile {
+        Tile {
+            id: self.id,
+            data: self.data.clone().slice_move(s![1..-1,1..-1]),
+        }
     }
 }
 
 impl Grid {
-    fn arrange_tiles(&mut self, all_tiles: &[TileVersion], put_index: usize) -> bool {
+    fn arrange_tiles(&mut self, all_tiles: &[Tile], put_index: usize) -> bool {
         for i in 0..all_tiles.len() {
             if self.fits_at(all_tiles, i, put_index) {
                 self.tiles[put_index] = Some(i);
@@ -76,7 +93,7 @@ impl Grid {
         false
     }
 
-    fn fits_at(&self, all_tiles: &[TileVersion], tile_index: usize, put_index: usize) -> bool {
+    fn fits_at(&self, all_tiles: &[Tile], tile_index: usize, put_index: usize) -> bool {
         let tile = &all_tiles[tile_index];
         for i in 0..put_index {
             let index = self.tiles[i];
@@ -107,7 +124,7 @@ impl Grid {
         true
     }
 
-    fn get_tile_id(&self, all_tiles: &[TileVersion], tile_index: usize) -> u64 {
+    fn get_tile_id(&self, all_tiles: &[Tile], tile_index: usize) -> u64 {
         all_tiles[self.tiles[tile_index].unwrap()].id as u64
     }
 }
@@ -115,38 +132,78 @@ impl Grid {
 pub fn part_one() {
     println!("--- Part One ---");
 
-    let (size, tiles) = TileVersion::parse("./data/dec_20.txt");
-    let grid_size = size.sqrt();
+    let (tile_count, _, tiles) = Tile::parse("./data/dec_20.txt");
+    let grid_size = tile_count.sqrt();
     let mut grid = Grid {
         size: grid_size,
         tiles: vec![None; grid_size * grid_size],
     };
     grid.arrange_tiles(&tiles, 0);
-    println!("grid: {:?}", grid);
 
     let corner1 = grid.get_tile_id(&tiles, 0);
     let corner2 = grid.get_tile_id(&tiles, grid_size - 1);
     let corner3 = grid.get_tile_id(&tiles, grid_size * grid_size - 1);
     let corner4 = grid.get_tile_id(&tiles, grid_size * grid_size - grid_size);
-    println!("corners: {:?} {:?} {:?} {:?}", corner1, corner2, corner3, corner4);
 
     let result = corner1 * corner2 * corner3 * corner4;
     println!("Result: {:?}", result);
 }
 
 pub fn part_two() {
-    // return;
-    // println!("--- Part Two ---");
-    //
-    // let tiles = Tile::parse("./data/dec_20.txt");
-    // let mut grid = Grid {
-    //     tiles: vec![None; GRID_SIZE * GRID_SIZE],
-    // };
-    // run(&tiles, &mut grid, 0);
-    // println!("grid: {:?}", grid);
-    //
-    // let result = 0;
-    // println!("Result: {:?}", result);
+    println!("--- Part Two ---");
+
+    let (tile_count, _, tiles) = Tile::parse("./data/dec_20.txt");
+
+    let grid_size = tile_count.sqrt();
+    let mut grid = Grid {
+        size: grid_size,
+        tiles: vec![None; grid_size * grid_size],
+    };
+    grid.arrange_tiles(&tiles, 0);
+
+    let rows = (0..grid_size).map(|row_index| {
+        let tiles = (0..grid_size)
+            .map(|col| grid.tiles[row_index * grid_size + col].unwrap())
+            .map(|id| &tiles[id])
+            .map(|t| t.crop())
+            .collect::<Vec<Tile>>();
+
+        let row = tiles.iter()
+            .map(|tile| tile.data.view())
+            .collect::<Vec<ArrayView2<bool>>>();
+
+        concatenate(Axis(1), &row).unwrap()
+    }).collect::<Vec<Array2<bool>>>();
+
+    let image = Tile {
+        id: 0,
+        data: concatenate(Axis(0),
+                          &rows.iter()
+                              .map(|row| row.view())
+                              .collect::<Vec<ArrayView2<bool>>>(),
+        ).unwrap(),
+    };
+
+    let shape = (3, 20);
+    let sea_monster_vec: Vec<bool> = "                  # #    ##    ##    ### #  #  #  #  #  #   ".chars()
+        .map(|c| c == '#')
+        .collect();
+    let sea_monster: Array2<bool> = Array::from_shape_vec(shape, sea_monster_vec).unwrap();
+
+    let mut times_found = 0;
+    for variant in image.get_variants() {
+        for window in variant.data.windows(shape) {
+            if window.clone().to_owned() & &sea_monster == sea_monster {
+                times_found += 1;
+            }
+        }
+        if times_found > 0 {
+            break;
+        }
+    }
+
+    let cnt = image.data.iter().filter(|v| **v).count();
+    println!("Result: {:?}", cnt - (times_found * 15));
 }
 
 
