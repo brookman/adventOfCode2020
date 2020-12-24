@@ -34,7 +34,7 @@ impl Food {
         }
         result
     }
-    pub fn remove(&mut self, allergen: &String, ingredient: &String) {
+    pub fn remove(&mut self, allergen: &str, ingredient: &str) {
         self.allergens.remove(allergen);
         self.ingredients.remove(ingredient);
     }
@@ -43,52 +43,38 @@ impl Food {
 pub fn part_one() {
     println!("--- Part One ---");
 
-    let mut foods = Food::parse("./data/dec_21.txt");
-    let mut map = HashMap::<String, String>::new();
+    let foods = Food::parse("./data/dec_21.txt");
+    let (remaining_foods, _) = get_data(&foods);
 
-    loop {
-        let it_result = do_iteration(&foods);
-        if it_result.is_some() {
-            let (allergen, ingredient) = it_result.unwrap();
-            for food in &mut foods {
-                food.remove(&allergen, &ingredient);
-            }
-            map.insert(allergen, ingredient);
-        } else {
-            break;
-        }
-    }
-
-    let result: usize = foods.iter().map(|f| f.ingredients.len()).sum();
+    let result: usize = remaining_foods.iter().map(|f| f.ingredients.len()).sum();
     println!("Result: {:?}", result);
 }
 
 pub fn part_two() {
     println!("--- Part Two ---");
 
-    let mut foods = Food::parse("./data/dec_21.txt");
-    let mut map = HashMap::<String, String>::new();
+    let foods = Food::parse("./data/dec_21.txt");
+    let (_, allergen_to_food_map) = get_data(&foods);
 
-    loop {
-        let it_result = do_iteration(&foods);
-        if it_result.is_some() {
-            let (allergen, ingredient) = it_result.unwrap();
-            for food in &mut foods {
-                food.remove(&allergen, &ingredient);
-            }
-            map.insert(allergen, ingredient);
-        } else {
-            break;
-        }
-    }
-
-    let mut dangerous_ingredients: Vec<_> = map.into_iter().collect();
+    let mut dangerous_ingredients: Vec<_> = allergen_to_food_map.into_iter().collect();
     dangerous_ingredients.sort_by(|x, y| x.0.cmp(&y.0));
-    let result = dangerous_ingredients.iter().map(|(k, v)| v).join(",");
+    let result = dangerous_ingredients.iter().map(|(_, v)| v).join(",");
     println!("Result: {}", result);
 }
 
-fn do_iteration(foods: &Vec<Food>) -> Option<(String, String)> {
+fn get_data(original_foods: &[Food]) -> (Vec<Food>, HashMap<String, String>) {
+    let mut foods = original_foods.to_vec();
+    let mut map = HashMap::new();
+    while let Some((allergen, ingredient)) = do_iteration(&foods) {
+        for food in &mut foods {
+            food.remove(&allergen, &ingredient);
+        }
+        map.insert(allergen, ingredient);
+    }
+    (foods, map)
+}
+
+fn do_iteration(foods: &[Food]) -> Option<(String, String)> {
     let unique_allergens = HashSet::<String>::from_iter(foods.iter().flat_map(|f| f.allergens.clone().into_iter()));
     let unique_ingredients = HashSet::<String>::from_iter(foods.iter().flat_map(|f| f.ingredients.clone().into_iter()));
     for allergen in unique_allergens {
@@ -98,15 +84,14 @@ fn do_iteration(foods: &Vec<Food>) -> Option<(String, String)> {
                 food_with_allergen.push(food.clone());
             }
         }
-        let correlation = find_correlation(&food_with_allergen, &unique_ingredients);
-        if correlation.is_some() {
-            return Some((allergen, correlation.unwrap()));
+        if let Some(correlation) = find_correlation(&food_with_allergen, &unique_ingredients) {
+            return Some((allergen, correlation));
         }
     }
     None
 }
 
-fn find_correlation(food_with_allergen: &Vec<Food>, unique_ingredients: &HashSet<String>) -> Option<String> {
+fn find_correlation(food_with_allergen: &[Food], unique_ingredients: &HashSet<String>) -> Option<String> {
     let matches: Vec<&String> = unique_ingredients.iter().filter(|ingredient| {
         food_with_allergen.iter().all(|food| food.ingredients.contains(*ingredient))
     }).collect();
