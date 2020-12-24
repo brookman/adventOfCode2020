@@ -1,6 +1,8 @@
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
+use itertools::Itertools;
+
 use crate::common;
 
 #[derive(Debug, Clone)]
@@ -57,17 +59,33 @@ pub fn part_one() {
         }
     }
 
-    println!("map: {:?}", map);
-    println!("foods: {:?}", foods);
-
     let result: usize = foods.iter().map(|f| f.ingredients.len()).sum();
     println!("Result: {:?}", result);
 }
 
 pub fn part_two() {
-    println!("--- Part One ---");
+    println!("--- Part Two ---");
 
-    println!("Result: {:?}", 0);
+    let mut foods = Food::parse("./data/dec_21.txt");
+    let mut map = HashMap::<String, String>::new();
+
+    loop {
+        let it_result = do_iteration(&foods);
+        if it_result.is_some() {
+            let (allergen, ingredient) = it_result.unwrap();
+            for food in &mut foods {
+                food.remove(&allergen, &ingredient);
+            }
+            map.insert(allergen, ingredient);
+        } else {
+            break;
+        }
+    }
+
+    let mut dangerous_ingredients: Vec<_> = map.into_iter().collect();
+    dangerous_ingredients.sort_by(|x, y| x.0.cmp(&y.0));
+    let result = dangerous_ingredients.iter().map(|(k, v)| v).join(",");
+    println!("Result: {}", result);
 }
 
 fn do_iteration(foods: &Vec<Food>) -> Option<(String, String)> {
@@ -82,7 +100,6 @@ fn do_iteration(foods: &Vec<Food>) -> Option<(String, String)> {
         }
         let correlation = find_correlation(&food_with_allergen, &unique_ingredients);
         if correlation.is_some() {
-            // println!("correlation for {}: {}", allergen, correlation.unwrap());
             return Some((allergen, correlation.unwrap()));
         }
     }
