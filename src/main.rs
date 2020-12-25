@@ -120,10 +120,10 @@ fn main() {
     // println!("\nDecember 23rd, 2020");
     // dec_23::part_one();
     // dec_23::part_two();
-
-    println!("\nDecember 24th, 2020");
-    dec_24::part_one();
-    dec_24::part_two();
+    //
+    // println!("\nDecember 24th, 2020");
+    // dec_24::part_one();
+    // dec_24::part_two();
 
     println!("\nDecember 25th, 2020");
     dec_25::part_one();
