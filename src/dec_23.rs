@@ -26,8 +26,7 @@ fn init(arr: &[usize]) -> Vec<Element> {
 pub fn part_one() {
     println!("--- Part One ---");
 
-    let arr = vec![1, 5, 6, 7, 9, 4, 8, 2, 3];
-    let cups = run(&arr, 100);
+    let cups = run(&[1, 5, 6, 7, 9, 4, 8, 2, 3], 100);
 
     let mut r = 0;
     let mut result_vec: Vec<usize> = vec![];
