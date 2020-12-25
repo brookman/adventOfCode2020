@@ -22,3 +22,4 @@ hilbert = "0.1.1"
 num = "0.2"
 nom = "5.0"
 ndarray = "0.14.0"
+phf = { version = "0.8.0", features = ["macros"] }
