@@ -1,7 +1,7 @@
 use std::f32::consts::PI;
 use std::ops::{Add, Div, Mul, Sub};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash)]
 pub struct Vector2i {
     pub x: i32,
     pub y: i32,
@@ -90,6 +90,18 @@ pub struct Vector2f {
     pub y: f32,
 }
 
+impl PartialEq for Vector2f {
+    fn eq(&self, other: &Self) -> bool {
+        self.x == other.x && self.y == other.y
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        !self.eq(other)
+    }
+}
+
+impl Eq for Vector2f {}
+
 impl Add<Vector2f> for Vector2f {
     type Output = Vector2f;
 
@@ -142,10 +154,10 @@ impl Vector2f {
     }
 
     pub fn round(&self) -> Vector2i {
-        return Vector2i {
+        Vector2i {
             x: self.x.round() as i32,
             y: self.y.round() as i32,
-        };
+        }
     }
 
     pub fn mag(&self) -> f32 {
@@ -162,5 +174,95 @@ impl Vector2f {
 
     pub fn dot(&self, other: Vector2f) -> f32 {
         return (self.x * other.x) + (self.y * other.y);
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq)]
+pub struct Vector3i {
+    pub x: i32,
+    pub y: i32,
+    pub z: i32,
+}
+
+impl Eq for Vector3i {}
+
+impl Add<Vector3i> for Vector3i {
+    type Output = Vector3i;
+
+    fn add(self, other: Vector3i) -> Vector3i {
+        Vector3i {
+            x: self.x + other.x,
+            y: self.y + other.y,
+            z: self.z + other.z,
+        }
+    }
+}
+
+impl Sub<Vector3i> for Vector3i {
+    type Output = Vector3i;
+
+    fn sub(self, other: Vector3i) -> Vector3i {
+        Vector3i {
+            x: self.x - other.x,
+            y: self.y - other.y,
+            z: self.z - other.z,
+        }
+    }
+}
+
+impl Mul<i32> for Vector3i {
+    type Output = Vector3i;
+
+    fn mul(self, other: i32) -> Vector3i {
+        Vector3i {
+            x: self.x * other,
+            y: self.y * other,
+            z: self.z * other,
+        }
+    }
+}
+
+impl Div<i32> for Vector3i {
+    type Output = Vector3i;
+
+    fn div(self, other: i32) -> Vector3i {
+        Vector3i {
+            x: self.x / other,
+            y: self.y / other,
+            z: self.z / other,
+        }
+    }
+}
+
+impl Vector3i {
+    pub fn new(x: i32, y: i32, z: i32) -> Vector3i {
+        Vector3i {
+            x,
+            y,
+            z,
+        }
+    }
+    pub fn mag(&self) -> f32 {
+        return (self.sqr_mag() as f32).sqrt();
+    }
+
+    pub fn mag_i(&self) -> i32 {
+        return self.mag().round() as i32;
+    }
+
+    pub fn sqr_mag(&self) -> i32 {
+        return (self.x * self.x) + (self.y * self.y) + (self.z * self.z);
+    }
+
+    pub fn dist(&self, other: Vector3i) -> f32 {
+        return (self.clone() - other).mag();
+    }
+
+    pub fn dist_i(&self, other: Vector3i) -> i32 {
+        return self.dist(other) as i32;
+    }
+
+    pub fn dot(&self, other: Vector3i) -> i32 {
+        return (self.x * other.x) + (self.y * other.y) + (self.z * other.z);
     }
 }
