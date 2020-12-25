@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter, Result};
 
 use crate::common;
-use crate::vectors::Vector2i;
+use crate::vectors::Vec2;
 
 #[derive(Clone, Debug, PartialEq)]
 enum CellState {
@@ -58,27 +58,27 @@ impl Grid {
     pub fn count_occupied(&self, index: usize, max_dist: i32) -> i32 {
         let x = (index % self.width) as i32;
         let y = (index / self.width) as i32;
-        let pos = Vector2i { x, y };
+        let pos = Vec2::new(x, y);
 
         return
-            self.get_occupied(pos.clone(), Vector2i { x: -1, y: -1 }, max_dist)
-                + self.get_occupied(pos.clone(), Vector2i { x: 0, y: -1 }, max_dist)
-                + self.get_occupied(pos.clone(), Vector2i { x: 1, y: -1 }, max_dist)
-                + self.get_occupied(pos.clone(), Vector2i { x: -1, y: 0 }, max_dist)
-                + self.get_occupied(pos.clone(), Vector2i { x: 1, y: 0 }, max_dist)
-                + self.get_occupied(pos.clone(), Vector2i { x: -1, y: 1 }, max_dist)
-                + self.get_occupied(pos.clone(), Vector2i { x: 0, y: 1 }, max_dist)
-                + self.get_occupied(pos.clone(), Vector2i { x: 1, y: 1 }, max_dist);
+            self.get_occupied(pos.clone(), Vec2::new(-1, -1), max_dist)
+                + self.get_occupied(pos.clone(), Vec2::new(0, -1), max_dist)
+                + self.get_occupied(pos.clone(), Vec2::new(1, -1), max_dist)
+                + self.get_occupied(pos.clone(), Vec2::new(-1, 0), max_dist)
+                + self.get_occupied(pos.clone(), Vec2::new(1, 0), max_dist)
+                + self.get_occupied(pos.clone(), Vec2::new(-1, 1), max_dist)
+                + self.get_occupied(pos.clone(), Vec2::new(0, 1), max_dist)
+                + self.get_occupied(pos.clone(), Vec2::new(1, 1), max_dist);
     }
 
-    pub fn get_occupied(&self, pos: Vector2i, dir: Vector2i, max_dist: i32) -> i32 {
+    pub fn get_occupied(&self, pos: Vec2<i32>, dir: Vec2<i32>, max_dist: i32) -> i32 {
         let mut cur = pos.clone();
         for _ in 0..max_dist {
             cur = cur.clone() + dir.clone();
-            if cur.x < 0 || cur.x >= self.width as i32 || cur.y < 0 || cur.y >= self.height as i32 {
+            if cur.x() < 0 || cur.x() >= self.width as i32 || cur.y() < 0 || cur.y() >= self.height as i32 {
                 return 0;
             }
-            match self.cells[cur.y as usize * self.width + cur.x as usize] {
+            match self.cells[cur.y() as usize * self.width + cur.x() as usize] {
                 CellState::OccupiedSeat => return 1,
                 CellState::EmptySeat => return 0,
                 _ => {}

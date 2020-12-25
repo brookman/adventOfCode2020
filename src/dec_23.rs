@@ -42,12 +42,12 @@ pub fn part_one() {
 pub fn part_two() {
     println!("--- Part Two ---");
 
-    let mut arr = vec![1, 5, 6, 7, 9, 4, 8, 2, 3];
-    for n in (arr.len() + 1)..1000000 {
+    let mut arr = vec![3, 8, 9, 1, 2, 5, 4, 6, 7];
+    for n in (arr.len() + 1)..1_000_000 {
         arr.push(n);
     }
 
-    let cups = run(&arr, 10000000);
+    let cups = run(&arr, 10_000_000);
 
     let r1 = cups[0].next;
     let r2 = cups[r1].next;

@@ -5,23 +5,14 @@ use std::ops::Add;
 
 use phf::phf_map;
 
-use crate::common;
+use crate::{common, vectors};
+use crate::vectors::Vec3;
 
 use self::nom::branch::alt;
 use self::nom::bytes::complete::tag;
 use self::nom::IResult;
 use self::nom::multi::many0;
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-struct Vec3<T>((T, T, T));
-
-impl<T> Add for Vec3<T> where T: Add<Output=T> {
-    type Output = Vec3<T>;
-
-    fn add(self, other: Self) -> Self::Output {
-        Vec3(((self.0).0 + (other.0).0, (self.0).1 + (other.0).1, (self.0).2 + (other.0).2))
-    }
-}
 
 static DIRECTIONS: phf::Map<&'static str, Vec3<i32>> = phf_map! {
     "e"  => Vec3(( 1, -1,  0)),
@@ -92,7 +83,7 @@ pub fn part_one() {
 }
 
 pub fn part_two() {
-    println!("--- Part One ---");
+    println!("--- Part Two ---");
     let mut floor = Floor::parse("./data/dec_24.txt");
     for _ in 0..100 {
         floor.iterate();

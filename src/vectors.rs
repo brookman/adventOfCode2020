@@ -1,268 +1,321 @@
-use std::f32::consts::PI;
+use std::f64::consts::PI;
+use std::fmt;
 use std::ops::{Add, Div, Mul, Sub};
 
-#[derive(Clone, Debug, Hash)]
-pub struct Vector2i {
-    pub x: i32,
-    pub y: i32,
-}
+use num::{Float, PrimInt, Signed};
 
-impl Add<Vector2i> for Vector2i {
-    type Output = Vector2i;
+// Vec1 ----------------------------------------------------------
 
-    fn add(self, other: Vector2i) -> Vector2i {
-        Vector2i {
-            x: self.x + other.x,
-            y: self.y + other.y,
-        }
+#[derive(Clone, Debug, Default, Hash, PartialEq, Eq)]
+pub struct Vec1<T>(pub T) where T: Clone;
+
+impl<T> Add for Vec1<T> where T: Add<Output=T>, T: Clone {
+    type Output = Vec1<T>;
+    fn add(self, other: Self) -> Self::Output {
+        Vec1(self.0 + other.0)
     }
 }
 
-impl Sub<Vector2i> for Vector2i {
-    type Output = Vector2i;
-
-    fn sub(self, other: Vector2i) -> Vector2i {
-        Vector2i {
-            x: self.x - other.x,
-            y: self.y - other.y,
-        }
+impl<T> Sub for Vec1<T> where T: Sub<Output=T>, T: Clone {
+    type Output = Vec1<T>;
+    fn sub(self, other: Self) -> Self::Output {
+        Vec1(self.0 - other.0)
     }
 }
 
-impl Mul<i32> for Vector2i {
-    type Output = Vector2i;
-
-    fn mul(self, other: i32) -> Vector2i {
-        Vector2i {
-            x: self.x * other,
-            y: self.y * other,
-        }
+impl<T> Mul<T> for Vec1<T> where T: Mul<Output=T>, T: Clone {
+    type Output = Vec1<T>;
+    fn mul(self, other: T) -> Self::Output {
+        Vec1(self.0 * other.clone())
     }
 }
 
-impl Div<i32> for Vector2i {
-    type Output = Vector2i;
-
-    fn div(self, other: i32) -> Vector2i {
-        Vector2i {
-            x: self.x / other,
-            y: self.y / other,
-        }
+impl<T> Div<T> for Vec1<T> where T: Div<Output=T>, T: Clone {
+    type Output = Vec1<T>;
+    fn div(self, other: T) -> Self::Output {
+        Vec1(self.0 / other.clone())
     }
 }
 
-
-impl Vector2i {
-    pub fn from_rot(degrees: f32) -> Vector2i {
-        let rad = degrees * PI / 180.0f32;
-        return Vector2i { x: rad.cos().round() as i32, y: rad.sin().round() as i32 };
+impl<T> Vec1<T> where T: Clone {
+    pub fn new(x: T) -> Self {
+        Vec1(x)
     }
 
-    pub fn mag(&self) -> f32 {
-        return (self.sqr_mag() as f32).sqrt();
+    pub fn x(&self) -> T {
+        self.0.clone()
     }
 
-    pub fn mag_i(&self) -> i32 {
-        return self.mag().round() as i32;
+    pub fn zero() -> Vec1<T> where T: Default {
+        Default::default()
     }
 
-    pub fn sqr_mag(&self) -> i32 {
-        return (self.x * self.x) + (self.y * self.y);
+    pub fn mag(&self) -> T where T: Float {
+        self.sqr_mag().sqrt()
     }
 
-    pub fn dist(&self, other: Vector2i) -> f32 {
-        return (self.clone() - other).mag();
+    pub fn sqr_mag(&self) -> T where T: Mul<Output=T>, T: Add<Output=T> {
+        self.x() * self.x()
     }
 
-    pub fn dist_i(&self, other: Vector2i) -> i32 {
-        return self.dist(other) as i32;
+    pub fn dist(&self, other: &Vec1<T>) -> T where T: Float {
+        (self.clone() - other.clone()).mag()
     }
 
-    pub fn dot(&self, other: Vector2i) -> i32 {
-        return (self.x * other.x) + (self.y * other.y);
-    }
-}
-
-
-#[derive(Clone, Debug)]
-pub struct Vector2f {
-    pub x: f32,
-    pub y: f32,
-}
-
-impl PartialEq for Vector2f {
-    fn eq(&self, other: &Self) -> bool {
-        self.x == other.x && self.y == other.y
+    pub fn dist_manhattan(&self, other: &Vec1<T>) -> T where T: Signed {
+        (self.x() - other.x()).abs()
     }
 
-    fn ne(&self, other: &Self) -> bool {
-        !self.eq(other)
+    pub fn dot(&self, other: &Vec1<T>) -> T where T: Mul<Output=T>, T: Add<Output=T> {
+        self.x() * other.x()
     }
 }
 
-impl Eq for Vector2f {}
-
-impl Add<Vector2f> for Vector2f {
-    type Output = Vector2f;
-
-    fn add(self, other: Vector2f) -> Vector2f {
-        Vector2f {
-            x: self.x + other.x,
-            y: self.y + other.y,
-        }
+impl<T> fmt::Display for Vec1<T> where T: fmt::Debug, T: Clone {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self.0)
     }
 }
 
-impl Sub<Vector2f> for Vector2f {
-    type Output = Vector2f;
+// Vec2 ----------------------------------------------------------
 
-    fn sub(self, other: Vector2f) -> Vector2f {
-        Vector2f {
-            x: self.x - other.x,
-            y: self.y - other.y,
-        }
+#[derive(Clone, Debug, Default, Hash, PartialEq, Eq)]
+pub struct Vec2<T>(pub (T, T)) where T: Clone;
+
+impl<T> Add for Vec2<T> where T: Add<Output=T>, T: Clone {
+    type Output = Vec2<T>;
+    fn add(self, other: Self) -> Self::Output {
+        Vec2((self.x() + other.0.0, self.y() + other.0.1))
     }
 }
 
-impl Mul<f32> for Vector2f {
-    type Output = Vector2f;
-
-    fn mul(self, other: f32) -> Vector2f {
-        Vector2f {
-            x: self.x * other,
-            y: self.y * other,
-        }
+impl<T> Sub for Vec2<T> where T: Sub<Output=T>, T: Clone {
+    type Output = Vec2<T>;
+    fn sub(self, other: Self) -> Self::Output {
+        Vec2((self.x() - other.0.0, self.y() - other.0.1))
     }
 }
 
-impl Div<f32> for Vector2f {
-    type Output = Vector2f;
-
-    fn div(self, other: f32) -> Vector2f {
-        Vector2f {
-            x: self.x / other,
-            y: self.y / other,
-        }
+impl<T> Mul<T> for Vec2<T> where T: Mul<Output=T>, T: Clone {
+    type Output = Vec2<T>;
+    fn mul(self, other: T) -> Self::Output {
+        Vec2((self.x() * other.clone(), self.y() * other.clone()))
     }
 }
 
-#[allow(dead_code)]
-impl Vector2f {
-    pub fn from_rot(degrees: f32) -> Vector2f {
-        let rad = degrees * PI / 180.0f32;
-        return Vector2f { x: rad.cos() as f32, y: rad.sin().round() as f32 };
-    }
-
-    pub fn round(&self) -> Vector2i {
-        Vector2i {
-            x: self.x.round() as i32,
-            y: self.y.round() as i32,
-        }
-    }
-
-    pub fn mag(&self) -> f32 {
-        return (self.sqr_mag() as f32).sqrt();
-    }
-
-    pub fn sqr_mag(&self) -> f32 {
-        return (self.x * self.x) + (self.y * self.y);
-    }
-
-    pub fn dist(&self, other: Vector2f) -> f32 {
-        return (self.clone() - other).mag();
-    }
-
-    pub fn dot(&self, other: Vector2f) -> f32 {
-        return (self.x * other.x) + (self.y * other.y);
+impl<T> Div<T> for Vec2<T> where T: Div<Output=T>, T: Clone {
+    type Output = Vec2<T>;
+    fn div(self, other: T) -> Self::Output {
+        Vec2((self.x() / other.clone(), self.y() / other.clone()))
     }
 }
 
-#[derive(Clone, Debug, Hash, PartialEq)]
-pub struct Vector3i {
-    pub x: i32,
-    pub y: i32,
-    pub z: i32,
-}
+impl<T> Vec2<T> where T: Clone {
+    pub fn new(x: T, y: T) -> Self {
+        Vec2((x, y))
+    }
 
-impl Eq for Vector3i {}
+    pub fn x(&self) -> T {
+        self.0.0.clone()
+    }
 
-impl Add<Vector3i> for Vector3i {
-    type Output = Vector3i;
+    pub fn y(&self) -> T {
+        self.0.1.clone()
+    }
 
-    fn add(self, other: Vector3i) -> Vector3i {
-        Vector3i {
-            x: self.x + other.x,
-            y: self.y + other.y,
-            z: self.z + other.z,
-        }
+    pub fn zero() -> Vec2<T> where T: Default {
+        Default::default()
+    }
+
+    pub fn mag(&self) -> T where T: Float {
+        self.sqr_mag().sqrt()
+    }
+
+    pub fn sqr_mag(&self) -> T where T: Mul<Output=T>, T: Add<Output=T> {
+        self.x() * self.x() + self.y() * self.y()
+    }
+
+    pub fn dist(&self, other: &Vec2<T>) -> T where T: Float {
+        (self.clone() - other.clone()).mag()
+    }
+
+    pub fn dist_manhattan(&self, other: &Vec2<T>) -> T where T: Signed {
+        (self.x() - other.x()).abs() + (self.y() - other.y()).abs()
+    }
+
+    pub fn dot(&self, other: &Vec2<T>) -> T where T: Mul<Output=T>, T: Add<Output=T> {
+        self.x() * other.x() + self.y() * other.y()
     }
 }
 
-impl Sub<Vector3i> for Vector3i {
-    type Output = Vector3i;
-
-    fn sub(self, other: Vector3i) -> Vector3i {
-        Vector3i {
-            x: self.x - other.x,
-            y: self.y - other.y,
-            z: self.z - other.z,
-        }
+impl<T> fmt::Display for Vec2<T> where T: fmt::Debug, T: Clone {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self.0)
     }
 }
 
-impl Mul<i32> for Vector3i {
-    type Output = Vector3i;
+// Vec3 ----------------------------------------------------------
 
-    fn mul(self, other: i32) -> Vector3i {
-        Vector3i {
-            x: self.x * other,
-            y: self.y * other,
-            z: self.z * other,
-        }
+#[derive(Clone, Debug, Default, Hash, PartialEq, Eq)]
+pub struct Vec3<T>(pub (T, T, T)) where T: Clone;
+
+impl<T> Add for Vec3<T> where T: Add<Output=T>, T: Clone {
+    type Output = Vec3<T>;
+    fn add(self, other: Self) -> Self::Output {
+        Vec3((self.x() + other.0.0, self.y() + other.0.1, self.z() + other.0.2))
     }
 }
 
-impl Div<i32> for Vector3i {
-    type Output = Vector3i;
-
-    fn div(self, other: i32) -> Vector3i {
-        Vector3i {
-            x: self.x / other,
-            y: self.y / other,
-            z: self.z / other,
-        }
+impl<T> Sub for Vec3<T> where T: Sub<Output=T>, T: Clone {
+    type Output = Vec3<T>;
+    fn sub(self, other: Self) -> Self::Output {
+        Vec3((self.x() - other.0.0, self.y() - other.0.1, self.z() - other.0.2))
     }
 }
 
-impl Vector3i {
-    pub fn new(x: i32, y: i32, z: i32) -> Vector3i {
-        Vector3i {
-            x,
-            y,
-            z,
-        }
+impl<T> Mul<T> for Vec3<T> where T: Mul<Output=T>, T: Clone {
+    type Output = Vec3<T>;
+    fn mul(self, other: T) -> Self::Output {
+        Vec3((self.x() * other.clone(), self.y() * other.clone(), self.z() * other.clone()))
     }
-    pub fn mag(&self) -> f32 {
-        return (self.sqr_mag() as f32).sqrt();
+}
+
+impl<T> Div<T> for Vec3<T> where T: Div<Output=T>, T: Clone {
+    type Output = Vec3<T>;
+    fn div(self, other: T) -> Self::Output {
+        Vec3((self.x() / other.clone(), self.y() / other.clone(), self.z() / other.clone()))
+    }
+}
+
+impl<T> Vec3<T> where T: Clone {
+    pub fn new(x: T, y: T, z: T) -> Self {
+        Vec3((x, y, z))
     }
 
-    pub fn mag_i(&self) -> i32 {
-        return self.mag().round() as i32;
+    pub fn x(&self) -> T {
+        self.0.0.clone()
     }
 
-    pub fn sqr_mag(&self) -> i32 {
-        return (self.x * self.x) + (self.y * self.y) + (self.z * self.z);
+    pub fn y(&self) -> T {
+        self.0.1.clone()
     }
 
-    pub fn dist(&self, other: Vector3i) -> f32 {
-        return (self.clone() - other).mag();
+    pub fn z(&self) -> T {
+        self.0.2.clone()
     }
 
-    pub fn dist_i(&self, other: Vector3i) -> i32 {
-        return self.dist(other) as i32;
+    pub fn zero() -> Vec3<T> where T: Default {
+        Default::default()
     }
 
-    pub fn dot(&self, other: Vector3i) -> i32 {
-        return (self.x * other.x) + (self.y * other.y) + (self.z * other.z);
+    pub fn mag(&self) -> T where T: Float {
+        self.sqr_mag().sqrt()
+    }
+
+    pub fn sqr_mag(&self) -> T where T: Mul<Output=T>, T: Add<Output=T> {
+        self.x() * self.x() + self.y() * self.y() + self.z() * self.z()
+    }
+
+    pub fn dist(&self, other: &Vec3<T>) -> T where T: Float {
+        (self.clone() - other.clone()).mag()
+    }
+
+    pub fn dist_manhattan(&self, other: &Vec3<T>) -> T where T: Signed {
+        (self.x() - other.x()).abs() + (self.y() - other.y()).abs() + (self.z() - other.z()).abs()
+    }
+
+    pub fn dot(&self, other: &Vec3<T>) -> T where T: Mul<Output=T>, T: Add<Output=T> {
+        self.x() * other.x() + self.y() * other.y() + self.z() * other.z()
+    }
+}
+
+impl<T> fmt::Display for Vec3<T> where T: fmt::Debug, T: Clone {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
+}
+
+// Vec4 ----------------------------------------------------------
+
+#[derive(Clone, Debug, Default, Hash, PartialEq, Eq)]
+pub struct Vec4<T>(pub (T, T, T, T)) where T: Clone;
+
+impl<T> Add for Vec4<T> where T: Add<Output=T>, T: Clone {
+    type Output = Vec4<T>;
+    fn add(self, other: Self) -> Self::Output {
+        Vec4((self.x() + other.0.0, self.y() + other.0.1, self.z() + other.0.2, self.w() + other.0.3))
+    }
+}
+
+impl<T> Sub for Vec4<T> where T: Sub<Output=T>, T: Clone {
+    type Output = Vec4<T>;
+    fn sub(self, other: Self) -> Self::Output {
+        Vec4((self.x() - other.0.0, self.y() - other.0.1, self.z() - other.0.2, self.w() - other.0.3))
+    }
+}
+
+impl<T> Mul<T> for Vec4<T> where T: Mul<Output=T>, T: Clone {
+    type Output = Vec4<T>;
+    fn mul(self, other: T) -> Self::Output {
+        Vec4((self.x() * other.clone(), self.y() * other.clone(), self.z() * other.clone(), self.w() * other.clone()))
+    }
+}
+
+impl<T> Div<T> for Vec4<T> where T: Div<Output=T>, T: Clone {
+    type Output = Vec4<T>;
+    fn div(self, other: T) -> Self::Output {
+        Vec4((self.x() / other.clone(), self.y() / other.clone(), self.z() / other.clone(), self.w() / other.clone()))
+    }
+}
+
+impl<T> Vec4<T> where T: Clone {
+    pub fn new(x: T, y: T, z: T, w: T) -> Self {
+        Vec4((x, y, z, w))
+    }
+
+    pub fn x(&self) -> T {
+        self.0.0.clone()
+    }
+
+    pub fn y(&self) -> T {
+        self.0.1.clone()
+    }
+
+    pub fn z(&self) -> T {
+        self.0.2.clone()
+    }
+
+    pub fn w(&self) -> T {
+        self.0.3.clone()
+    }
+
+    pub fn zero() -> Vec4<T> where T: Default {
+        Default::default()
+    }
+
+    pub fn mag(&self) -> T where T: Float {
+        self.sqr_mag().sqrt()
+    }
+
+    pub fn sqr_mag(&self) -> T where T: Mul<Output=T>, T: Add<Output=T> {
+        self.x() * self.x() + self.y() * self.y() + self.z() * self.z() + self.w() * self.w()
+    }
+
+    pub fn dist(&self, other: &Vec4<T>) -> T where T: Float {
+        (self.clone() - other.clone()).mag()
+    }
+
+    pub fn dist_manhattan(&self, other: &Vec4<T>) -> T where T: Signed {
+        (self.x() - other.x()).abs() + (self.y() - other.y()).abs() + (self.z() - other.z()).abs() + (self.w() - other.w()).abs()
+    }
+
+    pub fn dot(&self, other: &Vec4<T>) -> T where T: Mul<Output=T>, T: Add<Output=T> {
+        self.x() * other.x() + self.y() * other.y() + self.z() * other.z() + self.w() * other.w()
+    }
+}
+
+impl<T> fmt::Display for Vec4<T> where T: fmt::Debug, T: Clone {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self.0)
     }
 }
