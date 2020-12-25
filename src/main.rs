@@ -103,11 +103,9 @@ fn main() {
     // dec_18::part_two();
     //
     // println!("\nDecember 19th, 2020");
-    // dec_19::part_one();
-    // dec_19::part_two();
-    dec_19_2::part_one();
-    dec_19_2::part_two();
-
+    // dec_19_2::part_one();
+    // dec_19_2::part_two();
+    //
     // println!("\nDecember 20th, 2020");
     // dec_20::part_one();
     // dec_20::part_two();
@@ -127,8 +125,7 @@ fn main() {
     // println!("\nDecember 24th, 2020");
     // dec_24::part_one();
     // dec_24::part_two();
-    //
-    // println!("\nDecember 25th, 2020");
-    // dec_25::part_one();
-    // dec_25::part_two();
+
+    println!("\nDecember 25th, 2020");
+    dec_25::part_one();
 }

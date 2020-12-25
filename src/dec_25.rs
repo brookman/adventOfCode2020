@@ -1,44 +1,28 @@
+use crate::common;
 
 pub fn part_one() {
     println!("--- Part One ---");
 
-    let pub1 = 1327981u64;
-    let pub2 = 2822615u64;
+    let lines = common::read_strings("./data/dec_25.txt");
+
+    let pub1 = lines[0].parse::<u64>().unwrap();
+    let pub2 =  lines[1].parse::<u64>().unwrap();
+
     let modulus = 20201227u64;
+    let subject = 7u64;
 
-    let  subject = 7u64;
-
-    let mut loop_size_1 = 1;
-    let mut loop_size_2 = 1;
-
+    let mut loop_size = 0;
     let mut current = 1;
-    loop {
+
+    while current != pub1 {
+        loop_size += 1;
         current = (current * subject) % modulus;
-        if current == pub1 {
-            break;
-        }
-        loop_size_1 += 1;
     }
 
     current = 1;
-    loop {
-        current = (current * subject) % modulus;
-        if current == pub2 {
-            break;
-        }
-        loop_size_2 += 1;
+    for _ in 0..loop_size as usize {
+        current = (current * pub2) % modulus;
     }
 
-    current = 1;
-    for i in 0..loop_size_2 as usize {
-        current = (current * pub1) % modulus;
-    }
-
-    println!("Result: {:?}", current);
-}
-
-pub fn part_two() {
-    println!("--- Part One ---");
-
-    println!("Result: {:?}", 0);
+    println!("Result: {}", current);
 }
