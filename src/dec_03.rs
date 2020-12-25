@@ -66,6 +66,6 @@ pub fn part_two() {
         Slope { x: 7, y: 1 },
         Slope { x: 1, y: 2 }].iter()
         .map(|s| landscape.evaluate(s))
-        .collect();
+        .collect::<Vec<i32>>();
     println!("Result: {}", common::format_to_product(&results));
 }

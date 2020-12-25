@@ -95,7 +95,7 @@ pub fn format_to_sum(numbers: &Vec<i32>) -> String {
     return format!("{} = {}", joined, sum);
 }
 
-pub fn format_to_product(numbers: &Vec<i32>) -> String {
+pub fn format_to_product(numbers: &[i32]) -> String {
     let strings: Vec<String> = numbers.iter().map(|n| n.to_string()).collect();
     let joined = strings.join(" * ");
     let product: i64 = numbers.iter().map(|n| (*n as i64)).product();
