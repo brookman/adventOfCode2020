@@ -1,156 +1,108 @@
-use std::fmt;
+use std::collections::HashSet;
 
-use hilbert::transform::fast_hilbert::{hilbert_axes, hilbert_index};
 use itertools::Itertools;
-use num::ToPrimitive;
-use num::bigint::BigUint;
 
 use crate::common;
 
-const BITS_PER_DIMENSION: usize = 8;
-
-fn to_coords(index: usize, dimensions: usize) -> Vec<u32> {
-    return hilbert_axes(&BigUint::from(index), BITS_PER_DIMENSION, dimensions);
-}
-
-fn to_index(coords: &Vec<u32>) -> usize {
-    let index = hilbert_index(coords, BITS_PER_DIMENSION, None);
-    return index.to_u32().unwrap() as usize;
-}
-
-fn add(a: &Vec<i32>, b: &Vec<i32>) -> Vec<i32> {
-    return a.iter().zip(b).map(|(av, bv)| av + bv).collect();
-}
-
-fn cast_to_i32(a: &Vec<u32>) -> Vec<i32> {
-    return a.into_iter().map(|v| *v as i32).collect();
-}
-
-fn cast_to_u32(a: &Vec<i32>) -> Vec<u32> {
-    return a.into_iter().map(|v| *v as u32).collect();
-}
-
 #[derive(Clone, Debug)]
 struct Grid {
-    size: usize,
     dimensions: usize,
-    cells: Vec<u8>,
+    permutations: HashSet<Vec<i32>>,
+    cells: HashSet<Vec<i32>>,
 }
 
 impl Grid {
-    fn new(size: usize, dimensions: usize) -> Grid {
-        Grid {
-            size,
+    fn new(dimensions: usize) -> Self {
+        let zero = vec![0i32; dimensions];
+        let permutations = vec![-1, 0, 1].into_iter()
+            .combinations_with_replacement(dimensions)
+            .flat_map(|co| co.into_iter()
+                .permutations(dimensions)
+                .unique())
+            .filter(|permutation| permutation != &zero)
+            .collect();
+
+        Self {
             dimensions,
-            cells: vec![0; size.pow(dimensions as u32) * BITS_PER_DIMENSION as usize],
+            permutations,
+            cells: HashSet::new(),
         }
     }
 
-    fn parse(filename: &str, dimensions: usize) -> Grid {
+    fn parse(filename: &str, dimensions: usize) -> Self {
         let lines = common::read_strings(filename);
-        let mut state = Grid::new(lines.len(), dimensions);
+        let mut grid = Grid::new(dimensions);
         for (y, line) in lines.iter().enumerate() {
             for (x, c) in line.chars().enumerate() {
-                let mut coords = vec![(lines.len() / 2) as u32; dimensions];
-                coords[0] = x as u32;
-                coords[1] = y as u32;
-                state.set(&coords, if c == '#' { 1 } else { 0 });
-            }
-        }
-        return state;
-    }
-
-    fn set(&mut self, coords: &Vec<u32>, value: u8) {
-        self.set_index(to_index(coords), value);
-    }
-
-    fn set_index(&mut self, index: usize, value: u8) {
-        self.cells[index] = value;
-    }
-
-    fn get(&self, coords: &Vec<i32>) -> u8 {
-        for c in coords.iter() {
-            if *c < 0 || *c > self.size as i32 {
-                return 0;
-            }
-        }
-        return self.cells[to_index(&cast_to_u32(&coords))];
-    }
-
-    fn count_all(&self) -> u32 {
-        return self.cells.iter().map(|c| *c as u32).sum();
-    }
-
-    fn count_neighbors(&self, vec_coords: &Vec<i32>) -> u32 {
-        let mut sum = 0u32;
-
-        for permutation in vec![-1, 0, 1].into_iter().combinations_with_replacement(self.dimensions)
-            .flat_map(|co| co.into_iter().permutations(self.dimensions).unique()) {
-            if permutation == vec![0, 0, 0] {
-                continue;
-            }
-
-            sum += self.get(&add(&vec_coords, &permutation)) as u32;
-        }
-
-        return sum;
-    }
-
-    fn next(&self) -> Grid {
-        let mut new_grid = Grid::new(self.size + 2, self.dimensions);
-        for cell in 0..new_grid.cells.len() {
-            let coords = to_coords(cell, self.dimensions);
-            let old_coord = add(&cast_to_i32(&coords), &vec![-1; coords.len()]);
-            let old_value = self.get(&old_coord);
-            let count = self.count_neighbors(&old_coord);
-            let mut value = 0;
-            if old_value > 0 {
-                if count == 2 || count == 3 {
-                    value = 1;
+                if c == '#' {
+                    let mut coords = vec![0i32; dimensions];
+                    coords[0] = x as i32;
+                    coords[1] = y as i32;
+                    grid.cells.insert(coords);
                 }
-            } else if count == 3 {
-                value = 1;
             }
-            new_grid.set_index(cell, value);
         }
-        return new_grid;
+        grid
     }
-}
 
-impl fmt::Display for Grid {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let _ = write!(f, "\nsize={}, dimensions={}, cells={}\n", self.size, self.dimensions, self.cells.len());
-        for z in 0..self.size {
-            let _ = write!(f, "z={}\n", z);
-            for y in 0..self.size {
-                for x in 0..self.size {
-                    if self.get(&vec![x as i32, y as i32, z as i32]) > 0 {
-                        let _ = write!(f, "#");
-                    } else {
-                        let _ = write!(f, ".");
-                    }
-                }
-                let _ = write!(f, "\n");
-            }
+    fn is_set(&self, coords: &[i32]) -> bool {
+        self.cells.contains(coords)
+    }
+
+    fn count_neighbors(&self, coords: &[i32]) -> usize {
+        self.neighbors(&coords).into_iter().filter(|n| self.is_set(n)).count()
+    }
+
+    fn neighbors(&self, tile: &[i32]) -> Vec<Vec<i32>> {
+        self.permutations.iter()
+            .map(|permutation| Grid::add(tile, permutation))
+            .collect()
+    }
+
+    fn add(a: &[i32], b: &[i32]) -> Vec<i32> {
+        let mut z: Vec<i32> = vec![0i32; a.len()];
+        for ((zval, aval), bval) in z.iter_mut().zip(a).zip(b) {
+            *zval = aval + bval;
         }
-        write!(f, "")
+        z
+    }
+
+    fn count_all(&self) -> usize {
+        self.cells.len()
+    }
+
+    fn iterate(&mut self) {
+        self.cells = self.get_affected_tiles().into_iter()
+            .filter(|tile| {
+                let count = self.count_neighbors(&tile);
+                self.is_set(&tile) && count == 2 || count == 3
+            }).collect();
+    }
+
+    fn get_affected_tiles(&self) -> HashSet<Vec<i32>> {
+        let mut result = HashSet::new();
+        result.extend(self.cells.clone());
+        for tile in &self.cells {
+            result.extend(self.neighbors(tile));
+        }
+        result
     }
 }
 
 pub fn part_one() {
-    // println!("--- Part One ---");
-    // let mut state = Grid::parse("./data/dec_17.txt", 3);
-    // for _ in 0..6 {
-    //     state = state.next();
-    // }
-    // println!("Result: {}", state.count_all());
+    println!("--- Part One ---");
+    let mut grid = Grid::parse("./data/dec_17.txt", 3);
+    for _ in 0..6 {
+        grid.iterate();
+    }
+    println!("Result: {}", grid.count_all());
 }
 
 pub fn part_two() {
-    // println!("--- Part One ---");
-    // let mut state = Grid::parse("./data/dec_17.txt", 4);
-    // for _ in 0..6 {
-    //     state = state.next();
-    // }
-    // println!("Result: {}", state.count_all());
+    println!("--- Part Two ---");
+    let mut grid = Grid::parse("./data/dec_17.txt", 4);
+    for _ in 0..6 {
+        grid.iterate();
+    }
+    println!("Result: {}", grid.count_all());
 }
