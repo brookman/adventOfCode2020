@@ -31,7 +31,7 @@ pub fn part_one() {
         }
     }
 
-    println!("Result: {:?}", pos.x().abs() + pos.y().abs());
+    println!("Result: {:?}", pos.x.abs() + pos.y.abs());
 }
 
 pub fn part_two() {
@@ -52,17 +52,17 @@ pub fn part_two() {
             'W' => { way = way + Vec2::new(-value, 0) }
             'L' => {
                 match value {
-                    90 => { way = Vec2::new(way.y(), -way.x()) }
-                    180 => { way = Vec2::new(-way.x(), -way.y()) }
-                    270 => { way = Vec2::new(-way.y(), way.x()) }
+                    90 => { way = Vec2::new(way.y, -way.x) }
+                    180 => { way = Vec2::new(-way.x, -way.y) }
+                    270 => { way = Vec2::new(-way.y, way.x) }
                     _ => {}
                 }
             }
             'R' => {
                 match value {
-                    90 => { way = Vec2::new(-way.y(), way.x()) }
-                    180 => { way = Vec2::new(-way.x(), -way.y()) }
-                    270 => { way = Vec2::new(way.y(), -way.x()) }
+                    90 => { way = Vec2::new(-way.y, way.x) }
+                    180 => { way = Vec2::new(-way.x, -way.y) }
+                    270 => { way = Vec2::new(way.y, -way.x) }
                     _ => {}
                 }
             }
@@ -71,5 +71,5 @@ pub fn part_two() {
         }
     }
 
-    println!("Result: {:?}", pos.x().abs() + pos.y().abs());
+    println!("Result: {:?}", pos.x.abs() + pos.y.abs());
 }

@@ -1,11 +1,10 @@
 extern crate nom;
 
 use std::collections::HashSet;
-use std::ops::Add;
 
 use phf::phf_map;
 
-use crate::{common, vectors};
+use crate::common;
 use crate::vectors::Vec3;
 
 use self::nom::branch::alt;
@@ -13,14 +12,13 @@ use self::nom::bytes::complete::tag;
 use self::nom::IResult;
 use self::nom::multi::many0;
 
-
 static DIRECTIONS: phf::Map<&'static str, Vec3<i32>> = phf_map! {
-    "e"  => Vec3(( 1, -1,  0)),
-    "se" => Vec3(( 0, -1,  1)),
-    "sw" => Vec3((-1,  0,  1)),
-    "w"  => Vec3((-1,  1,  0)),
-    "nw" => Vec3(( 0,  1, -1)),
-    "ne" => Vec3(( 1,  0, -1)),
+    "e"  =>  Vec3 { x:  1, y: -1, z:  0},
+    "se" =>  Vec3 { x:  0, y: -1, z:  1},
+    "sw" =>  Vec3 { x: -1, y:  0, z:  1},
+    "w"  =>  Vec3 { x: -1, y:  1, z:  0},
+    "nw" =>  Vec3 { x:  0, y:  1, z: -1},
+    "ne" =>  Vec3 { x:  1, y:  0, z: -1},
 };
 
 struct Floor {
@@ -35,7 +33,7 @@ impl Floor {
             if let Ok((_, r)) = parsed {
                 let sum = r.into_iter()
                     .map(|s| DIRECTIONS[s].clone())
-                    .fold(Vec3((0, 0, 0)), |s, c| s + c);
+                    .fold(Vec3::new(0, 0, 0), |s, c| s + c);
                 if tiles.contains(&sum) {
                     tiles.remove(&sum);
                 } else {

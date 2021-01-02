@@ -75,10 +75,10 @@ impl Grid {
         let mut cur = pos.clone();
         for _ in 0..max_dist {
             cur = cur.clone() + dir.clone();
-            if cur.x() < 0 || cur.x() >= self.width as i32 || cur.y() < 0 || cur.y() >= self.height as i32 {
+            if cur.x < 0 || cur.x >= self.width as i32 || cur.y < 0 || cur.y >= self.height as i32 {
                 return 0;
             }
-            match self.cells[cur.y() as usize * self.width + cur.x() as usize] {
+            match self.cells[cur.y as usize * self.width + cur.x as usize] {
                 CellState::OccupiedSeat => return 1,
                 CellState::EmptySeat => return 0,
                 _ => {}
