@@ -6,5 +6,5 @@ mod vectors;
 
 fn main() {
     println!("\nCoding contest");
-    contest::run();
+    contest::run_a();
 }

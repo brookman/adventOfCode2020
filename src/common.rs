@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader, Lines, Result};
+use std::io::{BufRead, BufReader, BufWriter, Lines, LineWriter, Result, Write};
 use std::path::Path;
 use std::str::FromStr;
 
@@ -54,6 +54,21 @@ pub fn read_strings(filename: &str) -> Vec<String> {
         }
     }
     strings
+}
+
+
+pub fn write_strings(filename: &str, lines: &Vec<String>) -> Result<()> {
+    let file = File::create(filename)?;
+    let mut file = LineWriter::new(file);
+
+    for line in lines {
+        file.write_all(line.as_bytes()).unwrap();
+        file.write_all(b"\n").unwrap();
+    }
+
+    file.flush()?;
+
+    Ok(())
 }
 
 // read chunks of lines separated by empty lines
