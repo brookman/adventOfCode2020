@@ -6,9 +6,9 @@ mod vectors;
 
 fn main() {
     println!("\nCoding contest");
-    contest::run("./data/inputA.txt","./outputA.txt");
-    // contest::run("./data/inputB.txt","./outputB.txt");
-    // contest::run("./data/inputC.txt","./outputC.txt");
-    // contest::run("./data/inputD.txt","./outputD.txt");
-    // contest::run("./data/inputE.txt","./outputE.txt");
+    contest::run("./data/inputA.txt","./data/outputA.txt");
+    contest::run("./data/inputB.txt","./data/outputB.txt");
+    contest::run("./data/inputC.txt","./data/outputC.txt");
+    contest::run("./data/inputD.txt","./data/outputD.txt");
+    contest::run("./data/inputE.txt","./data/outputE.txt");
 }

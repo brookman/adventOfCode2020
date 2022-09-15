@@ -1,5 +1,6 @@
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::time::Instant;
 use crate::common;
 
 #[derive(Clone, Debug)]
@@ -37,7 +38,8 @@ pub enum Action {
 #[derive(Debug, Clone)]
 struct PurchaseRecord {
     year: u32,
-    purchase_price: u32,
+    purchase_price: f64,
+    loan: f64,
 }
 
 impl Input {
@@ -100,9 +102,10 @@ impl Property {
         0
     }
 
-    fn can_buy(&self, year: u32, funds: u32) -> bool {
+    fn can_buy(&self, year: u32, funds: f64, loan_percentage: u32) -> bool {
         if let Ok(value) = self.buy_value(year) {
-            if funds >= value {
+            let price_to_pay = (100 - loan_percentage) as f64 * value as f64 / 100.0;
+            if funds >= price_to_pay as f64 {
                 return true;
             }
         }
@@ -141,24 +144,14 @@ impl Output {
 }
 
 pub fn run(input_path: &str, output_path: &str) {
-    println!("input {:?}", input_path);
+    let start = Instant::now();
+
+    println!("input_path {:?}", input_path);
     let lines = common::read_strings(input_path);
     let input = Input::parse(&lines[0], &lines[1..]);
-    // println!("input: {:?}", input);
 
-    // let lifetime_0 = input.properties[0].lifetime();
-    // println!("lifetime_0: {:?}", lifetime_0);
-    //
-    // let lifetime_1 = input.properties[1].lifetime();
-    // println!("lifetime_1: {:?}", lifetime_1);
-    //
-    // let lifetime_2 = input.properties[2].lifetime();
-    // println!("lifetime_2: {:?}", lifetime_2);
-    //
-    // println!("sale: {:?}", input.properties[1].for_sale(2));
-    // println!("value: {:?}", input.properties[1].value(12));
-
-    let mut money = input.seed_money;
+    let mut money = input.seed_money as f64;
+    let mut loans = 0f64;
     let mut owned: HashMap<usize, PurchaseRecord> = HashMap::new();
     let mut output = Output {
         entries: vec![]
@@ -174,7 +167,8 @@ pub fn run(input_path: &str, output_path: &str) {
         .max()
         .unwrap_or(0);
 
-    // println!("first_year: {:?}, last_year: {:?}", first_year, last_year);
+    println!("properties: {:?}", input.properties.len());
+    println!("first_year: {:?}, last_year: {:?}", first_year, last_year);
 
     for year in first_year..last_year {
         let mut entry = OutputEntry {
@@ -185,6 +179,14 @@ pub fn run(input_path: &str, output_path: &str) {
         for index in 0..input.properties.len() {
             let property = &input.properties[index];
 
+            let interest_rate = (0.2 * year as f64).sin() + (0.6 * year as f64).sin() + (0.01 * year as f64).sin() + 3.0;
+            let interest = loans * interest_rate / 100.0;
+            // println!("interest: {:?}", interest);
+            money -= interest;
+            if money < 0.0 {
+                panic!("failed");
+            }
+
             if owned.contains_key(&index) {
                 // Sell
                 let record = owned.get(&index).unwrap();
@@ -194,8 +196,9 @@ pub fn run(input_path: &str, output_path: &str) {
                 let profit_next_year = sell_value_next_year as i32 - record.purchase_price as i32;
                 if profit_this_year > 0 && profit_this_year >= profit_next_year {
                     entry.actions.push(Action::Sell(index));
+                    loans -= record.loan;
+                    money += sell_value_this_year as f64;
                     owned.remove(&index);
-                    money += sell_value_this_year;
                     // println!("SELL | year: {:?}, property: {:?}, value: {:?}, profit: {:?}, money: {:?}", year, property.name, sell_value_this_year, profit_this_year, money);
                 }
             }
@@ -208,11 +211,17 @@ pub fn run(input_path: &str, output_path: &str) {
 
                     // println!("year: {:?}, property: {:?}, potential: {:?}", year, property.name, potential);
 
-                    if potential_next_year > 0 && property.can_buy(year, money) {
-                        entry.actions.push(Action::Buy(index, 0));
-                        e.insert(PurchaseRecord { year, purchase_price: price });
-                        money -= price;
-                        // println!("BUY | year: {:?}, property: {:?}, price: {:?}, money: {:?}", year, property.name, price, money);
+                    let loan_percentage = 0;
+                    let out_of_pocket = (100 - loan_percentage) as f64 * price as f64 / 100.0;
+                    let loan = loan_percentage as f64 * price as f64 / 100.0;
+
+                    if potential_next_year > 0 && property.can_buy(year, money, loan_percentage) {
+                        entry.actions.push(Action::Buy(index, loan_percentage));
+
+                        e.insert(PurchaseRecord { year, purchase_price: out_of_pocket, loan });
+                        money -= out_of_pocket;
+                        loans += loan;
+                        // println!("BUY | year: {:?}, property: {:?}, price: {:?}, money: {:?}, loans: {:?}", year, property.name, out_of_pocket, money, loans);
                     }
                 }
             }
@@ -225,4 +234,6 @@ pub fn run(input_path: &str, output_path: &str) {
     // println!("output_lines: {:?}", output_lines);
 
     common::write_strings(output_path, &output_lines).unwrap();
+
+    println!("duration: {:?}", start.elapsed());
 }
