@@ -1,3 +1,3 @@
-# Advent of Code 2020
+# Coding contest @ Hamilton & JES Camp 2022
 
-Trying to solve the daily puzzles from https://adventofcode.com/2020/ and learn Rust 🦀 in the process.
+Run with: `cargo run --release`

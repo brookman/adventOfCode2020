@@ -5,7 +5,7 @@ authors = ["Bachmann, Benjamin <Benjamin.Bachmann@zuehlke.com>"]
 edition = "2018"
 
 [profile.release]
-opt-level = 'z'  # Optimize for size.
+opt-level = 3
 lto = true
 codegen-units = 1
 panic = 'abort'     # Abort on panic
@@ -15,10 +15,10 @@ panic = 'abort'     # Abort on panic
 [dependencies]
 regex = "1"
 lazy_static = "1.4.0"
-itertools = "0.9.0"
+itertools = "0.10.4"
 euler = "0.4.0"
 gcd = "2.0.1"
-num = "0.2"
-nom = "5.0"
-ndarray = "0.14.0"
-phf = { version = "0.8.0", features = ["macros"] }
+num = "0.4.0"
+nom = "7.1.1"
+ndarray = "0.15.6"
+phf = { version = "0.11.1", features = ["macros"] }
